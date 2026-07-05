@@ -1,0 +1,21 @@
+# firmware/config.py
+
+# WPM
+WPM = 12
+UNIT = 1200 // WPM
+
+# Audio
+TONE_FREQ = 650
+TONE_LEVEL = 30000
+
+# GPIO
+PIN_DIT = 2
+PIN_DAH = 3
+PIN_AUDIO = 4
+
+PIN_SCK = 18
+PIN_MOSI = 19
+PIN_CS = 17
+PIN_DC = 21
+PIN_RST = 20
+PIN_BL = 22
