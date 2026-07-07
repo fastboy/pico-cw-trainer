@@ -1,21 +1,11 @@
-# firmware/config.py
+# config.py
 
-# WPM
-WPM = 12
-UNIT = 1200 // WPM
+DEFAULT_WPM = 20
 
-# Audio
-TONE_FREQ = 650
-TONE_LEVEL = 30000
+SIDETONE_FREQ = 700
 
-# GPIO
-PIN_DIT = 2
-PIN_DAH = 3
-PIN_AUDIO = 4
+IAMBIC_MODE = "A"      # A or B
 
-PIN_SCK = 18
-PIN_MOSI = 19
-PIN_CS = 17
-PIN_DC = 21
-PIN_RST = 20
-PIN_BL = 22
+DISPLAY_ROTATION = 1
+
+DOT_WEIGHT = 1.0

@@ -1,9 +1,19 @@
+from morse_encoder import MorseEncoder
 from keyer import Keyer
 
-k = Keyer(18)
+encoder = MorseEncoder()
+keyer = Keyer(18)
+
+patterns = encoder.encode_text("CQ TEST")
+
+print(patterns)
+
+for pattern in patterns:
+
+    keyer.queue_pattern(pattern)
 
 print()
 
-print("CW Trainer")
+while keyer.busy():
 
-print(k.get_timings())
+    print(keyer.get_next_pattern())
