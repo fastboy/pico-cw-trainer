@@ -1,21 +1,28 @@
-import config
 import time
 
 class Keyer:
-    def __init__(self, audio):
-        self.audio = audio
-        self.buffer = ""
-        self.last = time.ticks_ms()
 
-    def dit(self):
-        self.audio.beep(config.UNIT)
-        self.buffer += "."
-        self.last = time.ticks_ms()
+    def __init__(self, wpm=20):
 
-    def dah(self):
-        self.audio.beep(config.UNIT * 3)
-        self.buffer += "-"
-        self.last = time.ticks_ms()
+        self.set_speed(wpm)
 
-    def ready_to_decode(self):
-        return time.ticks_diff(time.ticks_ms(), self.last) > 1200
+    def set_speed(self, wpm):
+
+        self.wpm = wpm
+
+        self.dot = 1.2 / wpm
+        self.dash = self.dot * 3
+
+        self.element_gap = self.dot
+        self.letter_gap = self.dot * 3
+        self.word_gap = self.dot * 7
+
+    def get_timings(self):
+
+        return {
+            "dot": self.dot,
+            "dash": self.dash,
+            "element": self.element_gap,
+            "letter": self.letter_gap,
+            "word": self.word_gap
+        }
