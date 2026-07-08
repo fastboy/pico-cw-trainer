@@ -1,19 +1,40 @@
-from morse_encoder import MorseEncoder
+import time
+
 from keyer import Keyer
 
-encoder = MorseEncoder()
+
 keyer = Keyer(18)
 
-patterns = encoder.encode_text("CQ TEST")
 
-print(patterns)
+start = time.ticks_ms()
 
-for pattern in patterns:
+pressed = False
+released = False
 
-    keyer.queue_pattern(pattern)
 
-print()
+while True:
 
-while keyer.busy():
+    now = time.ticks_ms()
 
-    print(keyer.get_next_pattern())
+
+    if not pressed and time.ticks_diff(now, start) > 1000:
+
+        print("DASH PADDLE DOWN")
+
+        keyer.hold_dash()
+
+        keyer.request_dash()
+
+        pressed = True
+
+
+    if not released and time.ticks_diff(now, start) > 5000:
+
+        print("DASH PADDLE UP")
+
+        keyer.release_dash()
+
+        released = True
+
+
+    keyer.update(now)
