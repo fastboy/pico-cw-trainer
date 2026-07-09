@@ -25,7 +25,7 @@ class Keyer:
         self.state = self.IDLE
         self.output = False
         self.next_change = 0
-        self.new_element = None
+        self.events = []
 
         self.mode = self.MODE_IAMBIC_A
 
@@ -100,7 +100,7 @@ class Keyer:
     def send_dot(self):
 
         self.last_sent = self.DOT
-        self.new_element = self.DOT
+        self.events.append(self.DOT)
 
         print("START DOT")
 
@@ -118,7 +118,7 @@ class Keyer:
     def send_dash(self):
 
         self.last_sent = self.DASH
-        self.new_element = self.DASH
+        self.events.append(self.DASH)
 
         print("START DASH")
 
@@ -176,6 +176,14 @@ class Keyer:
         print("FIRST HELD :", self.first_held)
         print("LAST SENT  :", self.last_sent)
         print("OUTPUT     :", self.output)
+
+    def get_events(self):
+
+        events = self.events[:]
+
+        self.events.clear()
+
+        return events
 
     def update(self, now):
         self.new_element = None
@@ -241,3 +249,4 @@ class Keyer:
                 self.handle_iambic_b()
 
         return
+
