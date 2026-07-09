@@ -3,6 +3,13 @@ import time
 from morse import MORSE
 
 
+# Build reverse lookup table automatically
+DECODE = {}
+
+for letter, pattern in MORSE.items():
+    DECODE[pattern] = letter
+
+
 class Decoder:
 
     def __init__(self, timeout=1000):
@@ -40,9 +47,7 @@ class Decoder:
 
     def decode(self):
 
-        # convert pattern to character
-
-        letter = MORSE.get(
+        letter = DECODE.get(
             self.buffer,
             "?"
         )
