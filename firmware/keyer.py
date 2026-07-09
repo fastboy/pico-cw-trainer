@@ -1,252 +1,84 @@
+from machine import Pin, PWM
 import time
 
+from keyer import Keyer
+from decoder import Decoder
+from display import Display
 
-class Keyer:
 
-    # States
-    IDLE = 0
-    KEY_DOWN = 1
-    KEY_UP = 2
+# -----------------------------
+# Paddle
+# -----------------------------
+dot = Pin(2, Pin.IN, Pin.PULL_UP)
+dash = Pin(3, Pin.IN, Pin.PULL_UP)
 
-    # Elements
-    DOT = 0
-    DASH = 1
 
-    # Modes
-    MODE_STRAIGHT = 0
-    MODE_BUG = 1
-    MODE_IAMBIC_A = 2
-    MODE_IAMBIC_B = 3
+# -----------------------------
+# Speaker
+# -----------------------------
+speaker = PWM(Pin(4))
+speaker.freq(650)
+speaker.duty_u16(0)
 
-    def __init__(self, wpm=20):
+# -----------------------------
+# Modules
+# -----------------------------
+keyer = Keyer(wpm=12)
+decoder = Decoder()
+display = Display()
 
-        self.set_speed(wpm)
+display.title()
+display.show_speed(12)
 
-        self.state = self.IDLE
-        self.output = False
-        self.next_change = 0
-        self.events = []
+print("CW Trainer test")
 
-        self.mode = self.MODE_IAMBIC_A
 
-        # History
-        self.first_held = None
-        self.last_sent = None
+while True:
 
-        # Requests
-        self.dot_request = False
-        self.dash_request = False
+    # Paddle
+    if not dot.value():
+        keyer.hold_dot()
+    else:
+        keyer.release_dot()
 
-        # Paddle states
-        self.dot_held = False
-        self.dash_held = False
+    if not dash.value():
+        keyer.hold_dash()
+    else:
+        keyer.release_dash()
 
+    # Keyer
+    keyer.update(time.ticks_ms())
 
-    def set_speed(self, wpm):
+    # Speaker
+    if keyer.output:
+        speaker.duty_u16(30000)
+    else:
+        speaker.duty_u16(0)
 
-        self.dot = int(1200 / wpm)
-        self.dash = self.dot * 3
+    # -------------------------
+    # Decoder
+    # -------------------------
 
+    for event in keyer.get_events():
 
-    def set_mode(self, mode):
+        if event == keyer.DOT:
+            decoder.add_dot()
+        else:
+            decoder.add_dash()
 
-        self.mode = mode
+        display.show_pattern(decoder.buffer)
 
 
-    def request_dot(self):
+    letter = decoder.update()
 
-        print("DOT REQUEST")
-        self.dot_request = True
+    if letter:
 
+        pattern, character = letter
 
-    def request_dash(self):
+        display.show_letter(character)
 
-        print("DASH REQUEST")
-        self.dash_request = True
+        display.show_text(decoder.text)
 
+        print(pattern, "=", character)
 
-    def hold_dot(self):
-
-        self.dot_held = True
-
-        if self.first_held is None:
-            self.first_held = self.DOT
-
-
-    def release_dot(self):
-
-        self.dot_held = False
-
-        if not self.dot_held and not self.dash_held:
-            self.first_held = None
-
-
-    def hold_dash(self):
-
-        self.dash_held = True
-
-        if self.first_held is None:
-            self.first_held = self.DASH
-
-
-    def release_dash(self):
-
-        self.dash_held = False
-
-        if not self.dot_held and not self.dash_held:
-            self.first_held = None
-
-
-    def send_dot(self):
-
-        self.last_sent = self.DOT
-        self.events.append(self.DOT)
-
-        print("START DOT")
-
-        self.state = self.KEY_DOWN
-        self.output = True
-
-        self.next_change = time.ticks_add(
-            time.ticks_ms(),
-            self.dot
-        )
-
-        print("KEY DOWN")
-
-
-    def send_dash(self):
-
-        self.last_sent = self.DASH
-        self.events.append(self.DASH)
-
-        print("START DASH")
-
-        self.state = self.KEY_DOWN
-        self.output = True
-
-        self.next_change = time.ticks_add(
-            time.ticks_ms(),
-            self.dash
-        )
-
-        print("KEY DOWN DASH")
-
-
-    def handle_straight(self):
-
-        # Straight key does not repeat automatically.
-        pass
-
-
-    def handle_bug(self):
-
-        # Automatic dots only.
-        if self.dot_held:
-            self.request_dot()
-
-
-    def handle_iambic_a(self):
-
-        # Currently identical to the original behaviour.
-        # Proper alternating will be added later.
-
-        if self.dot_held:
-
-            self.request_dot()
-
-        elif self.dash_held:
-
-            self.request_dash()
-
-
-    def handle_iambic_b(self):
-
-        # For now identical to Iambic A.
-        # Later this will implement element latching.
-        self.handle_iambic_a()
-
-    def debug(self):
-
-        print("--------------------------------")
-        print("STATE      :", self.state)
-        print("MODE       :", self.mode)
-        print("DOT HELD   :", self.dot_held)
-        print("DASH HELD  :", self.dash_held)
-        print("FIRST HELD :", self.first_held)
-        print("LAST SENT  :", self.last_sent)
-        print("OUTPUT     :", self.output)
-
-    def get_events(self):
-
-        events = self.events[:]
-
-        self.events.clear()
-
-        return events
-
-    def update(self, now):
-        self.new_element = None
-        if self.state == self.IDLE:
-
-            if self.dot_request:
-                self.dot_request = False
-                self.send_dot()
-
-            elif self.dash_request:
-                self.dash_request = False
-                self.send_dash()
-
-            elif self.dot_held:
-                self.send_dot()
-
-            elif self.dash_held:
-                self.send_dash()
-
-            return
-
-
-        if time.ticks_diff(now, self.next_change) < 0:
-
-            return
-
-
-        if self.state == self.KEY_DOWN:
-
-            self.output = False
-            self.state = self.KEY_UP
-
-            self.next_change = time.ticks_add(
-                now,
-                self.dot
-            )
-
-            print("KEY UP")
-
-            return
-
-
-        if self.state == self.KEY_UP:
-
-            self.state = self.IDLE
-
-            print("ELEMENT FINISHED")
-
-            if self.mode == self.MODE_STRAIGHT:
-
-                self.handle_straight()
-
-            elif self.mode == self.MODE_BUG:
-
-                self.handle_bug()
-
-            elif self.mode == self.MODE_IAMBIC_A:
-
-                self.handle_iambic_a()
-
-            elif self.mode == self.MODE_IAMBIC_B:
-
-                self.handle_iambic_b()
-
-        return
-
+    time.sleep_ms(5)
