@@ -25,6 +25,7 @@ class Keyer:
         self.state = self.IDLE
         self.output = False
         self.next_change = 0
+        self.new_element = None
 
         self.mode = self.MODE_IAMBIC_A
 
@@ -99,6 +100,7 @@ class Keyer:
     def send_dot(self):
 
         self.last_sent = self.DOT
+        self.new_element = self.DOT
 
         print("START DOT")
 
@@ -116,6 +118,7 @@ class Keyer:
     def send_dash(self):
 
         self.last_sent = self.DASH
+        self.new_element = self.DASH
 
         print("START DASH")
 
@@ -175,7 +178,7 @@ class Keyer:
         print("OUTPUT     :", self.output)
 
     def update(self, now):
-
+        self.new_element = None
         if self.state == self.IDLE:
 
             if self.dot_request:

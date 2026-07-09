@@ -101,3 +101,24 @@ class Display:
             180,
             st7789.CYAN
         )
+        
+    def show_text(self, text):
+
+        self.tft.fill_rect(
+            20,
+            220,
+            220,
+            30,
+            st7789.BLACK
+        )
+
+        # Show only the last 18 characters
+        text = text[-18:]
+
+        self.tft.text(
+            font,
+            text,
+            20,
+            220,
+            st7789.WHITE
+        )

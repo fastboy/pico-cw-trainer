@@ -15,6 +15,7 @@ class Decoder:
     def __init__(self, timeout=1000):
 
         self.buffer = ""
+        self.text = ""
         self.last_element = time.ticks_ms()
         self.timeout = timeout
 
@@ -51,9 +52,10 @@ class Decoder:
             self.buffer,
             "?"
         )
-
+        self.text += letter
         pattern = self.buffer
 
         self.buffer = ""
+        
 
         return pattern, letter
