@@ -7,6 +7,8 @@ class Display:
 
     def __init__(self):
 
+        self.font = font
+        
         bl = Pin(22, Pin.OUT)
         bl.value(1)
 
@@ -18,6 +20,12 @@ class Display:
             sck=Pin(18),
             mosi=Pin(19),
         )
+        self.lines = [
+                "",
+                "",
+                "",
+                ""
+            ]
 
         self.tft = st7789.ST7789(
             spi,
@@ -27,7 +35,8 @@ class Display:
             dc=Pin(21, Pin.OUT),
             cs=Pin(17, Pin.OUT),
             backlight=bl,
-            rotation=3,
+            rotation=1,
+            color_order=st7789.BGR,
         )
 
         self.tft.fill(st7789.BLACK)
@@ -143,20 +152,66 @@ class Display:
 
     def show_text(self, text):
 
+        self.lines[-1] += text
+
+        if len(self.lines[-1]) > 26:
+
+            self.lines.append("")
+            self.lines.pop(0)
+
         self.tft.fill_rect(
-            10,
-            90,
-            220,
-            120,
+            0,
+            85,
+            240,
+            150,
             st7789.BLACK
         )
 
-        text = text[-30:]
+        y = 90
+
+        for line in self.lines:
+
+            self.tft.text(
+                font,
+                line,
+                10,
+                y,
+                st7789.WHITE
+            )
+
+            y += 25
+    def show_softkeys(self, left, center, right):
+
+        # clear bottom line
+        self.tft.fill_rect(
+            0,
+            210,
+            320,
+            30,
+            st7789.BLACK
+        )
 
         self.tft.text(
             font,
-            text,
+            left,
             10,
-            100,
+            215,
             st7789.WHITE
         )
+
+        self.tft.text(
+            font,
+            center,
+            135,
+            215,
+            st7789.WHITE
+        )
+
+        self.tft.text(
+            font,
+            right,
+            260,
+            215,
+            st7789.WHITE
+        )
+
