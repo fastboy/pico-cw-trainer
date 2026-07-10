@@ -99,7 +99,7 @@ class Menu:
 
         if self.screen == "main":
 
-            title = "MENU"
+            title = "MAIN MENU"
 
         else:
 
