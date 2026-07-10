@@ -1,4 +1,5 @@
 import config
+from speed import Speed
 
 
 class Settings:
@@ -6,6 +7,8 @@ class Settings:
     def __init__(self, display):
 
         self.display = display
+        
+        self.speed = Speed(display)
 
         self.items = [
             "Speed",
@@ -51,8 +54,9 @@ class Settings:
 
         if item == "Speed":
 
-            print("Open speed editor")
-            return "speed"
+                self.speed.open()
+
+                return "speed"
 
 
         elif item == "Tone":
