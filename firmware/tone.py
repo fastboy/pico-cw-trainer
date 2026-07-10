@@ -7,7 +7,7 @@ class Tone:
 
         self.display = display
 
-        self.value = config.TONE
+        self.value = config.SIDETONE_FREQ
 
         self.MIN = 300
         self.MAX = 1200
@@ -15,7 +15,7 @@ class Tone:
 
     def open(self):
 
-        self.value = config.TONE
+        self.value = config.SIDETONE_FREQ
         self.draw()
 
 
@@ -76,9 +76,9 @@ class Tone:
 
     def confirm(self):
 
-        config.TONE = self.value
+        config.SIDETONE_FREQ = self.value
 
-        print("New Tone:", config.TONE)
+        print("New Tone:", config.SIDETONE_FREQ)
 
         return "back"
 

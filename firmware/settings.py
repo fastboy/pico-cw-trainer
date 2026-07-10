@@ -1,5 +1,6 @@
 import config
 from speed import Speed
+from tone import Tone
 
 
 class Settings:
@@ -9,6 +10,7 @@ class Settings:
         self.display = display
         
         self.speed = Speed(display)
+        self.tone = Tone(display)
 
         self.items = [
             "Speed",
@@ -61,7 +63,9 @@ class Settings:
 
         elif item == "Tone":
 
-            print("Open tone editor")
+            self.tone.open()
+
+            return "tone"
 
 
         elif item == "Back":
@@ -85,7 +89,6 @@ class Settings:
 
 
         y = 70
-
 
         for i, item in enumerate(self.items):
 
