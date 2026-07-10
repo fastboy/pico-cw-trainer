@@ -1,0 +1,117 @@
+import config
+
+
+class Tone:
+
+    def __init__(self, display):
+
+        self.display = display
+
+        self.value = config.TONE
+
+        self.MIN = 300
+        self.MAX = 1200
+
+
+    def open(self):
+
+        self.value = config.TONE
+        self.draw()
+
+
+
+    def update(self, event):
+
+        if event == "UP":
+
+            self.up(10)
+
+
+        elif event == "DOWN":
+
+            self.down(10)
+
+
+        elif event == "UP_REPEAT":
+
+            self.up(50)
+
+
+        elif event == "DOWN_REPEAT":
+
+            self.down(50)
+
+
+
+    def up(self, step=1):
+
+        self.change(step)
+
+
+
+    def down(self, step=1):
+
+        self.change(-step)
+
+
+
+    def change(self, amount):
+
+        self.value += amount
+
+
+        if self.value < self.MIN:
+
+            self.value = self.MIN
+
+
+        if self.value > self.MAX:
+
+            self.value = self.MAX
+
+
+        self.draw()
+
+
+
+    def confirm(self):
+
+        config.TONE = self.value
+
+        print("New Tone:", config.TONE)
+
+        return "back"
+
+
+
+    def draw(self):
+
+        self.display.tft.fill(0)
+
+
+        self.display.tft.text(
+            self.display.font,
+            "TONE",
+            110,
+            20,
+            0xFFE0
+        )
+
+
+        text = str(self.value) + " Hz"
+
+
+        self.display.tft.text(
+            self.display.font,
+            text,
+            100,
+            100,
+            0xFFFF
+        )
+
+
+        self.display.show_softkeys(
+            "CONFIRM",
+            "-",
+            "+"
+        )
