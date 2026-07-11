@@ -1,3 +1,4 @@
+```python
 from machine import Pin, SPI
 import st7789
 import vga1_16x16 as font
@@ -5,12 +6,41 @@ import vga1_16x16 as font
 
 class Display:
 
+    # -------------------------
+    # Display dimensions
+    # -------------------------
+    #
+    # Rotation 1 makes the physical
+    # 240 x 320 display appear as:
+    #
+    #     width  = 320
+    #     height = 240
+    # -------------------------
+
+    WIDTH = 320
+    HEIGHT = 240
+
+
     def __init__(self):
 
         self.font = font
-        
-        bl = Pin(22, Pin.OUT)
+
+
+        # -------------------------
+        # Backlight
+        # -------------------------
+
+        bl = Pin(
+            22,
+            Pin.OUT
+        )
+
         bl.value(1)
+
+
+        # -------------------------
+        # SPI
+        # -------------------------
 
         spi = SPI(
             0,
@@ -20,12 +50,23 @@ class Display:
             sck=Pin(18),
             mosi=Pin(19),
         )
+
+
+        # -------------------------
+        # Text history
+        # -------------------------
+
         self.lines = [
-                "",
-                "",
-                "",
-                ""
-            ]
+            "",
+            "",
+            "",
+            ""
+        ]
+
+
+        # -------------------------
+        # TFT
+        # -------------------------
 
         self.tft = st7789.ST7789(
             spi,
@@ -39,19 +80,29 @@ class Display:
             color_order=st7789.BGR,
         )
 
-        self.tft.fill(st7789.BLACK)
+        self.tft.fill(
+            st7789.BLACK
+        )
 
+
+    # -------------------------
+    # Main title
+    # -------------------------
 
     def title(self):
 
         self.tft.text(
-            font,
+            self.font,
             "CW TRAINER",
             70,
             10,
             st7789.YELLOW
         )
 
+
+    # -------------------------
+    # Current Morse pattern
+    # -------------------------
 
     def show_pattern(self, pattern):
 
@@ -64,52 +115,159 @@ class Display:
         )
 
         self.tft.text(
-            font,
+            self.font,
             pattern,
             10,
             45,
             st7789.WHITE
         )
 
-    def show_menu(self, title, items, selected):
 
-        # clear whole screen
-        self.tft.fill(st7789.BLACK)
+    # -------------------------
+    # Menu
+    # -------------------------
+
+    def show_menu(
+        self,
+        title,
+        items,
+        selected,
+        page=0,
+        items_per_page=5,
+        page_text="1/1"
+    ):
+
+        # -------------------------
+        # Clear whole screen
+        # -------------------------
+
+        self.tft.fill(
+            st7789.BLACK
+        )
 
 
-        # title
+        # -------------------------
+        # Menu title
+        # -------------------------
+
         self.tft.text(
-            font,
+            self.font,
             title,
-            80,
+            40,
             10,
             st7789.YELLOW
         )
 
 
-        # menu items
+        # -------------------------
+        # Page indicator
+        # -------------------------
+        #
+        # The font is 16 pixels wide.
+        # This calculates the text width
+        # and places it near the right edge.
+        #
+        # Examples:
+        #
+        #     1/1
+        #     1/2
+        #     2/2
+        # -------------------------
+
+        page_width = len(page_text) * 16
+
+        page_x = (
+            self.WIDTH
+            - page_width
+            - 8
+        )
+
+        self.tft.text(
+            self.font,
+            page_text,
+            page_x,
+            10,
+            st7789.CYAN
+        )
+
+
+        # -------------------------
+        # Current page range
+        # -------------------------
+        #
+        # Page 0:
+        #
+        #     items 0 to 4
+        #
+        # Page 1:
+        #
+        #     items 5 to 9
+        # -------------------------
+
+        first_item = (
+            page * items_per_page
+        )
+
+        last_item = (
+            first_item
+            + items_per_page
+        )
+
+
+        # -------------------------
+        # Visible menu items
+        # -------------------------
+
+        visible_items = items[
+            first_item:last_item
+        ]
+
+
+        # -------------------------
+        # Draw menu items
+        # -------------------------
+
         y = 50
 
-        for i, item in enumerate(items):
+        for local_index, item in enumerate(
+            visible_items
+        ):
 
-            if i == selected:
+            # Convert the position on this page
+            # back into the full menu index.
+            item_index = (
+                first_item
+                + local_index
+            )
+
+
+            if item_index == selected:
+
                 text = "> " + item
+
                 color = st7789.GREEN
 
             else:
+
                 text = "  " + item
+
                 color = st7789.WHITE
 
 
             self.tft.text(
-                font,
+                self.font,
                 text,
-                40,
+                24,
                 y,
                 color
             )
 
-            y += 25
+            y += 28
+
+
+    # -------------------------
+    # Decoded letter
+    # -------------------------
 
     def show_letter(self, letter):
 
@@ -122,33 +280,45 @@ class Display:
         )
 
         self.tft.text(
-            font,
+            self.font,
             letter,
             120,
             45,
             st7789.GREEN
         )
 
+
+    # -------------------------
+    # Current speed
+    # -------------------------
+
     def show_speed(self, wpm):
 
         self.tft.fill_rect(
             180,
             45,
-            80,
+            100,
             25,
             st7789.BLACK
         )
 
-        text = "WPM " + str(wpm)
+        text = (
+            "WPM "
+            + str(wpm)
+        )
 
         self.tft.text(
-            font,
+            self.font,
             text,
             180,
             45,
             st7789.CYAN
         )
 
+
+    # -------------------------
+    # Decoded text area
+    # -------------------------
 
     def show_text(self, text):
 
@@ -157,13 +327,15 @@ class Display:
         if len(self.lines[-1]) > 26:
 
             self.lines.append("")
+
             self.lines.pop(0)
+
 
         self.tft.fill_rect(
             0,
             85,
-            240,
-            150,
+            self.WIDTH,
+            120,
             st7789.BLACK
         )
 
@@ -172,7 +344,7 @@ class Display:
         for line in self.lines:
 
             self.tft.text(
-                font,
+                self.font,
                 line,
                 10,
                 y,
@@ -180,38 +352,60 @@ class Display:
             )
 
             y += 25
-    def show_softkeys(self, left, center, right):
 
-        # clear bottom line
+
+    # -------------------------
+    # Soft-key labels
+    # -------------------------
+    #
+    # These labels describe the short-press
+    # action of the three physical buttons.
+    #
+    # Later we can add a second, smaller row
+    # for hold actions such as:
+    #
+    #     +5
+    #     Cancel
+    #     Page +
+    # -------------------------
+
+    def show_softkeys(
+        self,
+        left,
+        center,
+        right
+    ):
+
+        # Clear bottom area.
         self.tft.fill_rect(
             0,
-            210,
-            320,
-            30,
+            208,
+            self.WIDTH,
+            32,
             st7789.BLACK
         )
 
         self.tft.text(
-            font,
+            self.font,
             left,
-            10,
-            215,
+            8,
+            216,
             st7789.WHITE
         )
 
         self.tft.text(
-            font,
+            self.font,
             center,
-            135,
-            215,
+            128,
+            216,
             st7789.WHITE
         )
 
         self.tft.text(
-            font,
+            self.font,
             right,
-            260,
-            215,
+            248,
+            216,
             st7789.WHITE
         )
-
+```

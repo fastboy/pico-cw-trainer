@@ -14,13 +14,18 @@ class Tone(Screen):
         self.MIN = 300
         self.MAX = 1200
 
+    # -------------------------
+    # Open editor
+    # -------------------------
 
     def open(self):
 
         self.value = config.SIDETONE_FREQ
         self.draw()
 
-
+    # -------------------------
+    # Button events
+    # -------------------------
 
     def update(self, event):
 
@@ -50,6 +55,9 @@ class Tone(Screen):
 
         return None
 
+    # -------------------------
+    # Value adjustment
+    # -------------------------
 
     def up(self, step=1):
 
@@ -80,7 +88,9 @@ class Tone(Screen):
 
         self.draw()
 
-
+    # -------------------------
+    # Confirm and return
+    # -------------------------
 
     def confirm(self):
 
@@ -88,9 +98,13 @@ class Tone(Screen):
 
         print("New Tone:", config.SIDETONE_FREQ)
 
-        return "back"
+        # Return the Settings screen object.
+        # app.py can change directly to this screen.
+        return self.parent
 
-
+    # -------------------------
+    # Draw editor
+    # -------------------------
 
     def draw(self):
 

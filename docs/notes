@@ -1,0 +1,81 @@
+Statistics
+
+The decoder could continuously calculate things like:
+
+Estimated WPM
+Average WPM
+Tone frequency
+Signal duration
+Decode confidence (rather than "accuracy", because with an unknown incoming signal you don't know the true message)
+Number of decoded characters
+Number of words
+
+For live decoding, confidence is a better metric than accuracy. Accuracy only makes sense when the expected text is known, such as in Practice mode.
+Possible display:
+
+CW Decoder
+
+WPM: 18.7
+Tone: 702 Hz
+Quality: 94%
+
+CQ CQ DE SM7ABC
+K
+
+or
+
+Decoded:
+CQ CQ DE SM7ABC K
+
+18.5 WPM
+94% confidence
+702 Hz
+Future possibilities
+
+Once the decoder exists, there are a lot of interesting additions:
+
+Automatic speed detection
+Automatic tone detection
+Noise filter
+Character timing visualization
+Dot/dash timing graph
+Display the raw Morse (.-.-) alongside decoded text
+Save decoded text to memory
+USB serial output to a PC
+
+
+posible features
+Main Menu
+│
+├── Practice
+│   ├── Single Characters
+│   ├── Character Groups
+│   ├── Random Letters
+│   ├── Random Numbers
+│   ├── Random Words
+│   ├── Callsigns
+│   ├── Prosigns
+│   ├── Q-Codes
+│   ├── Mixed Text
+│   └── Game
+│
+├── Decoder 
+├── Settings
+│   ├── Speed
+│   ├── Tone
+│   ├── Volume
+│   ├── Keyer Mode
+│   ├── Farnsworth
+│   └── ...
+│
+└── About
+
+Each screen translates those events differently.
+
+Screen mode	Button 1	Button 2	Button 3
+Menu	     Select	       Up	      Down
+Value editor Confirm	    +	        −
+Editor hold	Cancel/Back	  Fast +	 Fast −
+Practice	 Exit	      Clear	     Speed
+Trainer	     Exit	       Dit	      Dah
+

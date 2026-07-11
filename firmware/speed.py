@@ -1,27 +1,37 @@
-import time
 import config
 from screen import Screen
-
-print("SPEED.PY LOADED")
 
 
 class Speed(Screen):
 
     def __init__(self, display):
-        
+
         super().__init__()
+
         self.display = display
+
         self.value = config.WPM
 
         self.MIN = 5
         self.MAX = 60
 
 
+    # -------------------------
+    # Open editor
+    # -------------------------
+
     def open(self):
 
+        # Reload the current saved value whenever
+        # the Speed editor is opened.
         self.value = config.WPM
+
         self.draw()
 
+
+    # -------------------------
+    # Button events
+    # -------------------------
 
     def update(self, event):
 
@@ -43,7 +53,8 @@ class Speed(Screen):
         elif event == "DOWN_REPEAT":
 
             self.down(5)
-            
+
+
         elif event == "SELECT":
 
             return self.confirm()
@@ -52,16 +63,18 @@ class Speed(Screen):
         return None
 
 
+    # -------------------------
+    # Value adjustment
+    # -------------------------
+
     def up(self, step=1):
 
         self.change(step)
 
 
-
     def down(self, step=1):
 
         self.change(-step)
-
 
 
     def change(self, amount):
@@ -82,16 +95,27 @@ class Speed(Screen):
         self.draw()
 
 
+    # -------------------------
+    # Confirm and return
+    # -------------------------
 
     def confirm(self):
 
         config.WPM = self.value
 
-        print("New WPM:", config.WPM)
+        print(
+            "New WPM:",
+            config.WPM
+        )
 
-        return "back"
+        # Return the Settings screen object.
+        # app.py can change directly to this screen.
+        return self.parent
 
 
+    # -------------------------
+    # Draw editor
+    # -------------------------
 
     def draw(self):
 
@@ -107,7 +131,10 @@ class Speed(Screen):
         )
 
 
-        text = str(self.value) + " WPM"
+        text = (
+            str(self.value)
+            + " WPM"
+        )
 
 
         self.display.tft.text(
@@ -124,3 +151,4 @@ class Speed(Screen):
             "-",
             "+"
         )
+
