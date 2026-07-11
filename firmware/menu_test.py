@@ -9,19 +9,25 @@ from input import Input
 from keyer import Keyer
 
 
+# -------------------------
+# Hardware objects
+# -------------------------
+
 display = Display()
 
+buttons = Input()
+
+
+# -------------------------
+# Menus / Screens
+# -------------------------
 
 settings = Settings(display)
-
 
 menu = Menu(
     display,
     settings
 )
-
-
-buttons = Input()
 
 
 # -------------------------
@@ -48,12 +54,23 @@ dash = Pin(3, Pin.IN, Pin.PULL_UP)
 screen = "menu"
 
 
+current_editor = None
+
+
+
+# -------------------------
+# Start
+# -------------------------
 
 display.title()
 
 menu.open()
 
 
+
+# -------------------------
+# Main loop
+# -------------------------
 
 while True:
 
@@ -85,7 +102,9 @@ while True:
     keyer.update(time.ticks_ms())
 
 
-    # audio output
+    # -------------------------
+    # Audio output
+    # -------------------------
 
     if keyer.output:
 
@@ -103,6 +122,11 @@ while True:
 
     event = buttons.update()
 
+
+
+    # -------------------------
+    # MENU
+    # -------------------------
 
     if screen == "menu":
 
@@ -131,6 +155,10 @@ while True:
 
 
 
+    # -------------------------
+    # SETTINGS
+    # -------------------------
+
     elif screen == "settings":
 
 
@@ -153,9 +181,9 @@ while True:
             if result == "speed":
 
 
-                speed = settings.speed
+                current_editor = settings.speed
 
-                speed.open()
+                current_editor.open()
 
                 screen = "speed"
 
@@ -164,9 +192,9 @@ while True:
             elif result == "tone":
 
 
-                tone = settings.tone
+                current_editor = settings.tone
 
-                tone.open()
+                current_editor.open()
 
                 screen = "tone"
 
@@ -181,18 +209,23 @@ while True:
 
 
 
+    # -------------------------
+    # SPEED EDITOR
+    # -------------------------
+
     elif screen == "speed":
 
 
         if event:
 
-            speed.update(event)
+            current_editor.update(event)
+
 
 
         if event == "SELECT":
 
 
-            result = speed.confirm()
+            result = current_editor.confirm()
 
 
             if result == "back":
@@ -204,18 +237,23 @@ while True:
 
 
 
+    # -------------------------
+    # TONE EDITOR
+    # -------------------------
+
     elif screen == "tone":
 
 
         if event:
 
-            tone.update(event)
+            current_editor.update(event)
+
 
 
         if event == "SELECT":
 
 
-            result = tone.confirm()
+            result = current_editor.confirm()
 
 
             if result == "back":

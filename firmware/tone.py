@@ -1,12 +1,13 @@
+import time
 import config
+from screen import Screen
 
-
-class Tone:
+class Tone(Screen):
 
     def __init__(self, display):
 
         self.display = display
-
+        super().__init__()
         self.value = config.SIDETONE_FREQ
 
         self.MIN = 300

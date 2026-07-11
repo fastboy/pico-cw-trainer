@@ -1,10 +1,13 @@
-class Menu:
+from screen import Screen
+
+class Menu(Screen):
 
     def __init__(self, display, settings=None):
-
+        super().__init__()
+        
         self.display = display
         self.settings = settings
-
+        
         self.main_items = [
             "Practice",
             "Settings",
@@ -32,7 +35,25 @@ class Menu:
         self.screen = "main"
         self.title = "MAIN MENU"
 
+    def update(self, event):
 
+        if event == "UP":
+
+            self.up()
+
+
+        elif event == "DOWN":
+
+            self.down()
+
+
+        elif event == "SELECT":
+
+            return self.select()
+
+
+        return None
+    
     def open(self):
 
         self.screen = "main"
