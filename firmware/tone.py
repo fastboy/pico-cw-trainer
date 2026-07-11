@@ -2,6 +2,7 @@ import time
 import config
 from screen import Screen
 
+
 class Tone(Screen):
 
     def __init__(self, display):
@@ -41,7 +42,13 @@ class Tone(Screen):
         elif event == "DOWN_REPEAT":
 
             self.down(50)
+            
+        elif event == "SELECT":
 
+            return self.confirm()
+
+
+        return None
 
 
     def up(self, step=1):
