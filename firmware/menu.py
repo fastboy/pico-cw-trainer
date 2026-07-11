@@ -272,8 +272,8 @@ class Menu(Screen):
         if self.screen == "main":
 
             if selected == "Practice":
-
-                print("Practice selected")
+                
+                return "practice"
 
 
             elif selected == "Settings":
