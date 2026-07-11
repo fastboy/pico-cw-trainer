@@ -9,8 +9,8 @@ class Speed(Screen):
 
     def __init__(self, display):
         
-        self.display = display
         super().__init__()
+        self.display = display
         self.value = config.WPM
 
         self.MIN = 5
