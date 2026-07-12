@@ -363,3 +363,8 @@ class Menu(Screen):
                 self.items,
                 self.index
             )
+        self.display.show_softkeys(
+            "SELECT",
+            "DOWN",
+            " UP"
+        )

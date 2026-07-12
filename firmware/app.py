@@ -30,6 +30,38 @@ class App:
 
 
         # -------------------------
+        # Sound / Keyer
+        # -------------------------
+
+        self.speaker = PWM(
+            Pin(4)
+        )
+
+        self.speaker.freq(
+            config.SIDETONE_FREQ
+        )
+
+        self.speaker.duty_u16(0)
+
+
+        self.keyer = Keyer(
+            wpm=config.WPM
+        )
+
+        self.dot = Pin(
+            2,
+            Pin.IN,
+            Pin.PULL_UP
+        )
+
+        self.dash = Pin(
+            3,
+            Pin.IN,
+            Pin.PULL_UP
+        )
+
+
+        # -------------------------
         # Screens
         # -------------------------
 
@@ -50,7 +82,8 @@ class App:
         )
 
         self.practice = Practice(
-            self.display
+            self.display,
+            self.keyer
         )
         
         self.learn = Learn(
@@ -110,39 +143,6 @@ class App:
         # -------------------------
 
         self.current_screen = self.menu
-
-
-        # -------------------------
-        # Sound / Keyer
-        # -------------------------
-
-        self.speaker = PWM(
-            Pin(4)
-        )
-
-        self.speaker.freq(
-            config.SIDETONE_FREQ
-        )
-
-        self.speaker.duty_u16(0)
-
-
-        self.keyer = Keyer(
-            wpm=config.WPM
-        )
-
-        self.dot = Pin(
-            2,
-            Pin.IN,
-            Pin.PULL_UP
-        )
-
-        self.dash = Pin(
-            3,
-            Pin.IN,
-            Pin.PULL_UP
-        )
-
 
         # -------------------------
         # Start

@@ -147,8 +147,8 @@ class Speed(Screen):
 
 
         self.display.show_softkeys(
-            "CONFIRM",
-            "-",
-            "+"
+            "ACCEPT",
+            "  -",
+            "  +"
         )
 

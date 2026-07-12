@@ -96,7 +96,7 @@ class Display:
         self.tft.text(
             self.font,
             "CW TRAINER",
-            70,
+            10,
             10,
             st7789.YELLOW
         )
@@ -111,7 +111,7 @@ class Display:
         self.tft.fill_rect(
             10,
             45,
-            90,
+            190,
             25,
             st7789.BLACK
         )
@@ -274,7 +274,7 @@ class Display:
     def show_letter(self, letter):
 
         self.tft.fill_rect(
-            120,
+            160,
             45,
             40,
             25,
@@ -284,7 +284,7 @@ class Display:
         self.tft.text(
             self.font,
             letter,
-            120,
+            160,
             45,
             st7789.GREEN
         )
@@ -297,10 +297,10 @@ class Display:
     def show_speed(self, wpm):
 
         self.tft.fill_rect(
-            180,
-            45,
-            100,
-            25,
+            230,
+            10,
+            90,
+            20,
             st7789.BLACK
         )
 
@@ -312,11 +312,10 @@ class Display:
         self.tft.text(
             self.font,
             text,
-            180,
-            45,
+            200,
+            10,
             st7789.CYAN
         )
-
 
     # -------------------------
     # Decoded text area
@@ -498,9 +497,10 @@ class Display:
         self.tft.text(
             self.font,
             right,
-            248,
+            232,
             216,
             st7789.WHITE
         )
+
 
 

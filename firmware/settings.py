@@ -141,5 +141,5 @@ class Settings:
         self.display.show_softkeys(
             "CHANGE",
             "DOWN",
-            "UP"
+            " UP"
         )

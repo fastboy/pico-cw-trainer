@@ -6,11 +6,12 @@ from decoder import Decoder
 
 class Practice(Screen):
 
-    def __init__(self, display):
+    def __init__(self, display, keyer):
 
         super().__init__()
 
         self.display = display
+        self.keyer = keyer
 
         self.decoder = Decoder(
             wpm=config.WPM
@@ -34,6 +35,9 @@ class Practice(Screen):
 
         # Use the latest configured speed
         self.decoder.set_speed(
+            config.WPM
+        )
+        self.keyer.set_speed(
             config.WPM
         )
 

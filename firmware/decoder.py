@@ -1,202 +1,179 @@
-import time
+import config
 
-from morse import MORSE
-
-
-# -------------------------
-# Reverse Morse lookup
-# -------------------------
-
-DECODE = {}
-
-for character, pattern in MORSE.items():
-
-    DECODE[pattern] = character
+from screen import Screen
+from decoder import Decoder
 
 
-class Decoder:
+class Practice(Screen):
 
-    def __init__(self, wpm=12):
+    def __init__(self, display, keyer):
 
-        self.buffer = ""
+        super().__init__()
 
-        self.text = ""
+        self.display = display
+        self.keyer = keyer
 
-        self.last_element = None
+        self.decoder = Decoder(
+            wpm=config.WPM
+        )
 
-        # Duration of the most recently
-        # received element, in dot-times:
-        #
-        # dot  = 1
-        # dash = 3
-        self.last_element_units = 1
+        self.set_softkeys(
 
-        self.character_finished = False
+            "BACK",
 
-        self.space_added = False
+            "",
 
-        self.set_speed(
-            wpm
+            "CLEAR"
         )
 
 
     # -------------------------
-    # Decoder speed
+    # Open screen
     # -------------------------
 
-    def set_speed(self, wpm):
+    def open(self):
 
-        self.wpm = wpm
-
-        self.dot_time = int(
-            1200 / wpm
+        # Use the latest configured speed
+        self.decoder.set_speed(
+            config.WPM
+        )
+        self.keyer.set_speed(
+            config.WPM
         )
 
+        # Begin a fresh practice session
+        self.decoder.clear()
 
-    # -------------------------
-    # Add Morse elements
-    # -------------------------
-
-    def add_dot(self):
-
-        self.buffer += "."
-
-        self.last_element = time.ticks_ms()
-
-        self.last_element_units = 1
-
-        self.character_finished = False
-
-        self.space_added = False
-
-
-    def add_dash(self):
-
-        self.buffer += "-"
-
-        self.last_element = time.ticks_ms()
-
-        self.last_element_units = 3
-
-        self.character_finished = False
-
-        self.space_added = False
+        super().open()
 
 
     # -------------------------
-    # Check character/word gaps
+    # Front buttons
     # -------------------------
 
-    def update(self):
+    def update(self, event):
 
-        if self.last_element is None:
+        # GP9 / left softkey
+        if event == "SELECT":
 
-            return None
-
-
-        silence_from_start = time.ticks_diff(
-
-            time.ticks_ms(),
-
-            self.last_element
-        )
+            return self.parent
 
 
-        # Events arrive when an element begins.
-        # Include the duration of the last
-        # element before measuring its gap.
+        # GP7 / right softkey
+        elif event == "UP":
 
-        character_timeout = (
-
-            self.last_element_units + 3
-
-        ) * self.dot_time
-
-
-        word_timeout = (
-
-            self.last_element_units + 7
-
-        ) * self.dot_time
-
-
-        # -------------------------
-        # End of character
-        # -------------------------
-
-        if (
-            self.buffer
-            and not self.character_finished
-            and silence_from_start >= character_timeout
-        ):
-
-            return self.decode()
-
-
-        # -------------------------
-        # End of word
-        # -------------------------
-
-        if (
-            self.character_finished
-            and not self.space_added
-            and silence_from_start >= word_timeout
-        ):
-
-            if (
-                self.text
-                and not self.text.endswith(" ")
-            ):
-
-                self.text += " "
-
-
-            self.space_added = True
-
-            return "", " "
-
+            self.clear()
 
         return None
 
 
     # -------------------------
-    # Decode buffer
-    # -------------------------
-
-    def decode(self):
-
-        pattern = self.buffer
-
-        character = DECODE.get(
-            pattern,
-            "?"
-        )
-
-        self.text += character
-
-        self.buffer = ""
-
-        self.character_finished = True
-
-        self.space_added = False
-
-        return pattern, character
-
-
-    # -------------------------
-    # Clear session
+    # Clear practice session
     # -------------------------
 
     def clear(self):
 
-        self.buffer = ""
+        self.decoder.clear()
 
-        self.text = ""
+        self.display.show_pattern(
+            ""
+        )
 
-        self.last_element = None
+        self.display.show_letter(
+            ""
+        )
 
-        self.last_element_units = 1
+        self.display.show_text(
+            ""
+        )
 
-        self.character_finished = False
+        print("Practice cleared")
 
-        self.space_added = False
+
+    # -------------------------
+    # Receive keyer elements
+    # -------------------------
+
+    def add_element(
+        self,
+        element,
+        dot_value,
+        dash_value
+    ):
+
+        if element == dot_value:
+
+            self.decoder.add_dot()
+
+
+        elif element == dash_value:
+
+            self.decoder.add_dash()
+
+
+        self.display.show_pattern(
+            self.decoder.buffer
+        )
+
+
+    # -------------------------
+    # Decoder timer
+    # -------------------------
+
+    def tick(self):
+
+        result = self.decoder.update()
+
+        if not result:
+
+            return
+
+
+        pattern, character = result
+
+
+        # A space event updates only the
+        # running text, not the large letter.
+        if character != " ":
+
+            self.display.show_letter(
+                character
+            )
+
+            print(
+                pattern,
+                "=",
+                character
+            )
+
+
+        self.display.show_text(
+            self.decoder.text
+        )
+
+
+    # -------------------------
+    # Draw screen
+    # -------------------------
+
+    def draw(self):
+
+        self.display.title()
+
+        self.display.show_speed(
+            config.WPM
+        )
+
+        self.display.show_pattern(
+            ""
+        )
+
+        self.display.show_letter(
+            ""
+        )
+
+        self.display.show_text(
+            ""
+        )
+
+        self.draw_softkeys()

@@ -134,7 +134,7 @@ class Tone(Screen):
 
 
         self.display.show_softkeys(
-            "CONFIRM",
-            "-",
-            "+"
+            "ACCEPT"
+            "  -",
+            "  +"
         )
