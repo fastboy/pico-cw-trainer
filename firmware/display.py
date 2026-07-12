@@ -324,36 +324,128 @@ class Display:
 
     def show_text(self, text):
 
-        self.lines[-1] += text
+        # -------------------------
+        # Text area
+        # -------------------------
 
-        if len(self.lines[-1]) > 26:
+        x = 8
+        y = 90
 
-            self.lines.append("")
+        line_height = 25
 
-            self.lines.pop(0)
+        max_chars = 19
+        max_lines = 4
 
+
+        # -------------------------
+        # Wrap text by words
+        # -------------------------
+
+        lines = []
+
+        current_line = ""
+
+
+        for word in text.split(" "):
+
+            # Preserve a pending word gap without
+            # creating multiple empty lines.
+            if not word:
+
+                continue
+
+
+            if not current_line:
+
+                # Split unusually long words
+                while len(word) > max_chars:
+
+                    lines.append(
+                        word[:max_chars]
+                    )
+
+                    word = word[max_chars:]
+
+
+                current_line = word
+
+
+            elif (
+                len(current_line)
+                + 1
+                + len(word)
+                <= max_chars
+            ):
+
+                current_line += " " + word
+
+
+            else:
+
+                lines.append(
+                    current_line
+                )
+
+                while len(word) > max_chars:
+
+                    lines.append(
+                        word[:max_chars]
+                    )
+
+                    word = word[max_chars:]
+
+                current_line = word
+
+
+        if current_line:
+
+            lines.append(
+                current_line
+            )
+
+
+        # Keep only the newest visible lines
+        lines = lines[-max_lines:]
+
+
+        # -------------------------
+        # Clear old text
+        # -------------------------
 
         self.tft.fill_rect(
+
             0,
+
             85,
+
             self.WIDTH,
+
             120,
+
             st7789.BLACK
         )
 
-        y = 90
 
-        for line in self.lines:
+        # -------------------------
+        # Draw complete text
+        # -------------------------
+
+        for line in lines:
 
             self.tft.text(
+
                 self.font,
+
                 line,
-                10,
+
+                x,
+
                 y,
+
                 st7789.WHITE
             )
 
-            y += 25
+            y += line_height
 
 
     # -------------------------

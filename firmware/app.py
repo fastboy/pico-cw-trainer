@@ -1,6 +1,8 @@
 from machine import Pin, PWM
 from practice import Practice
 import time
+import config
+from learn import Learn
 from single_character import SingleCharacter
 
 from display import Display
@@ -36,7 +38,7 @@ class App:
         )
 
         self.settings = Settings(
-            self.displays
+            self.display
         )
 
         self.speed = Speed(
@@ -50,6 +52,11 @@ class App:
         self.practice = Practice(
             self.display
         )
+        
+        self.learn = Learn(
+            self.display
+        )
+        
         self.single_character = SingleCharacter(
             self.display
         )
@@ -66,7 +73,10 @@ class App:
 
         self.practice.parent = self.menu
         
-        self.single_character.parent = self.practice
+        self.learn.parent = self.menu
+        
+        self.single_character.parent = self.learn
+        
 
 
         # -------------------------
@@ -91,6 +101,7 @@ class App:
             "tone": self.tone,
             "practice": self.practice,
             "single_character": self.single_character,
+            "learn": self.learn,
         }
 
 
@@ -109,13 +120,15 @@ class App:
             Pin(4)
         )
 
-        self.speaker.freq(650)
+        self.speaker.freq(
+            config.SIDETONE_FREQ
+        )
 
         self.speaker.duty_u16(0)
 
 
         self.keyer = Keyer(
-            wpm=12
+            wpm=config.WPM
         )
 
         self.dot = Pin(
@@ -257,5 +270,6 @@ class App:
                 self.change_screen(
                     result
                 )
+
 
 

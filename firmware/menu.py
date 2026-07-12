@@ -25,6 +25,7 @@ class Menu(Screen):
 
         self.main_items = [
             "Practice",
+            "Learn",
             "Settings",
             "Keyer Mode",
             "About"
@@ -274,7 +275,10 @@ class Menu(Screen):
             if selected == "Practice":
                 
                 return "practice"
+            
+            elif selected == "Learn":
 
+                return "learn"
 
             elif selected == "Settings":
 

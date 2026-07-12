@@ -1,14 +1,10 @@
+import config
+
 from screen import Screen
+from decoder import Decoder
 
 
 class Practice(Screen):
-
-    # -------------------------
-    # Menu layout
-    # -------------------------
-
-    ITEMS_PER_PAGE = 5
-
 
     def __init__(self, display):
 
@@ -16,24 +12,18 @@ class Practice(Screen):
 
         self.display = display
 
-        self.title = "PRACTICE"
+        self.decoder = Decoder(
+            wpm=config.WPM
+        )
 
-        self.items = [
+        self.set_softkeys(
 
-            "Single Character",
-            "Character Groups",
-            "Random Character",
-            "Random Words",
-            "Callsigns",
+            "BACK",
 
-            "Prosigns",
-            "Q-Codes",
-            "Mixed Text",
-            "Game",
-            "Back"
-        ]
+            "",
 
-        self.index = 0
+            "CLEAR"
+        )
 
 
     # -------------------------
@@ -42,233 +32,144 @@ class Practice(Screen):
 
     def open(self):
 
-        self.index = 0
+        # Use the latest configured speed
+        self.decoder.set_speed(
+            config.WPM
+        )
+
+        # Begin a fresh practice session
+        self.decoder.clear()
 
         super().open()
 
 
     # -------------------------
-    # Page information
-    # -------------------------
-
-    def page_count(self):
-
-        return (
-            len(self.items)
-            + self.ITEMS_PER_PAGE
-            - 1
-        ) // self.ITEMS_PER_PAGE
-
-
-    def current_page(self):
-
-        return self.index // self.ITEMS_PER_PAGE
-
-
-    def page_text(self):
-
-        return "{}/{}".format(
-
-            self.current_page() + 1,
-
-            self.page_count()
-
-        )
-
-
-    # -------------------------
-    # Navigation
-    # -------------------------
-
-    def up(self):
-
-        self.index -= 1
-
-        if self.index < 0:
-
-            self.index = len(self.items) - 1
-
-        self.draw()
-
-
-    def down(self):
-
-        self.index += 1
-
-        if self.index >= len(self.items):
-
-            self.index = 0
-
-        self.draw()
-
-
-    def previous_page(self):
-
-        if self.current_page() == 0:
-
-            return
-
-        self.index = (
-
-            (self.current_page() - 1)
-
-            * self.ITEMS_PER_PAGE
-
-        )
-
-        self.draw()
-
-
-    def next_page(self):
-
-        if self.current_page() >= self.page_count() - 1:
-
-            return
-
-        self.index = (
-
-            (self.current_page() + 1)
-
-            * self.ITEMS_PER_PAGE
-
-        )
-
-        self.draw()
-
-
-    # -------------------------
-    # Buttons
+    # Front buttons
     # -------------------------
 
     def update(self, event):
 
-        if event == "UP":
-
-            self.up()
-
-
-        elif event == "DOWN":
-
-            self.down()
-
-
-        elif event == "UP_REPEAT":
-
-            self.previous_page()
-
-
-        elif event == "DOWN_REPEAT":
-
-            self.next_page()
-
-
-        elif event == "SELECT":
-
-            return self.select()
-
-
-        return None
-
-
-    # -------------------------
-    # Selection
-    # -------------------------
-
-    def select(self):
-
-        selected = self.items[self.index]
-
-        print("Practice:", selected)
-
-        # -------------------------
-        # Return to main menu
-        # -------------------------
-
-        if selected == "Back":
+        # GP9 / left softkey
+        if event == "SELECT":
 
             return self.parent
 
 
-        # -------------------------
-        # Practice modes
-        # -------------------------
+        # GP7 / right softkey
+        elif event == "UP":
 
-        if selected == "Single Character":
-
-            print("Starting Single Character practice")
-            
-            return "single_character"
-
-        elif selected == "Character Groups":
-
-            print("Character Groups coming soon")
-
-
-        elif selected == "Random Character":
-
-            print("Random Character coming soon")
-
-
-        elif selected == "Random Words":
-
-            print("Random Words coming soon")
-
-
-        elif selected == "Callsigns":
-
-            print("Callsigns coming soon")
-
-
-        elif selected == "Prosigns":
-
-            print("Prosigns coming soon")
-
-
-        elif selected == "Q-Codes":
-
-            print("Q-Codes coming soon")
-
-
-        elif selected == "Mixed Text":
-
-            print("Mixed Text coming soon")
-
-
-        elif selected == "Game":
-
-            print("Game coming soon")
+            self.clear()
 
         return None
 
 
     # -------------------------
-    # Draw
+    # Clear practice session
+    # -------------------------
+
+    def clear(self):
+
+        self.decoder.clear()
+
+        self.display.show_pattern(
+            ""
+        )
+
+        self.display.show_letter(
+            ""
+        )
+
+        self.display.show_text(
+            ""
+        )
+
+        print("Practice cleared")
+
+
+    # -------------------------
+    # Receive keyer elements
+    # -------------------------
+
+    def add_element(
+        self,
+        element,
+        dot_value,
+        dash_value
+    ):
+
+        if element == dot_value:
+
+            self.decoder.add_dot()
+
+
+        elif element == dash_value:
+
+            self.decoder.add_dash()
+
+
+        self.display.show_pattern(
+            self.decoder.buffer
+        )
+
+
+    # -------------------------
+    # Decoder timer
+    # -------------------------
+
+    def tick(self):
+
+        result = self.decoder.update()
+
+        if not result:
+
+            return
+
+
+        pattern, character = result
+
+
+        # A space event updates only the
+        # running text, not the large letter.
+        if character != " ":
+
+            self.display.show_letter(
+                character
+            )
+
+            print(
+                pattern,
+                "=",
+                character
+            )
+
+
+        self.display.show_text(
+            self.decoder.text
+        )
+
+
+    # -------------------------
+    # Draw screen
     # -------------------------
 
     def draw(self):
 
-        self.display.show_menu(
+        self.display.title()
 
-            self.title,
-
-            self.items,
-
-            self.index,
-
-            self.current_page(),
-
-            self.ITEMS_PER_PAGE,
-
-            self.page_text()
-
+        self.display.show_speed(
+            config.WPM
         )
 
-        self.display.show_softkeys(
-
-            "SELECT",
-
-            "UP",
-
-            "DOWN"
-
+        self.display.show_pattern(
+            ""
         )
+
+        self.display.show_letter(
+            ""
+        )
+
+        self.display.show_text(
+            ""
+        )
+
+        self.draw_softkeys()
