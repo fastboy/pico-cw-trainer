@@ -21,7 +21,6 @@ class Tone(Screen):
     def open(self):
 
         self.value = config.SIDETONE_FREQ
-
         super().open()
 
     # -------------------------
@@ -134,7 +133,7 @@ class Tone(Screen):
 
 
         self.display.show_softkeys(
-            "ACCEPT"
+            "ACCEPT",
             "  -",
             "  +"
         )

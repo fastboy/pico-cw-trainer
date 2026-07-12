@@ -1,145 +1,370 @@
-import config
-from speed import Speed
-from tone import Tone
+from screen import Screen
 
 
-class Settings:
+class Menu(Screen):
+
+    # -------------------------
+    # Menu layout
+    # -------------------------
+
+    # Maximum number of menu items shown
+    # on one display page.
+    ITEMS_PER_PAGE = 5
+
 
     def __init__(self, display):
 
-        self.display = display
-        
-        self.speed = Speed(display)
-        self.tone = Tone(display)
+        super().__init__()
 
-        self.items = [
-            "Speed",
-            "Tone",
+        self.display = display
+
+
+        # -------------------------
+        # Main menu
+        # -------------------------
+
+        self.main_items = [
+            "Practice",
+            "Learn",
+            "Settings",
+            "Keyer Mode",
+            "About"
+        ]
+
+
+        # -------------------------
+        # Keyer mode menu
+        # -------------------------
+
+        self.keyer_items = [
+            "Straight",
+            "Bug",
+            "Iambic A",
+            "Iambic B",
             "Back"
         ]
 
+
+        # -------------------------
+        # Current menu state
+        # -------------------------
+
+        self.items = self.main_items
+
         self.index = 0
+
+        self.screen = "main"
+
+        self.title = "MAIN MENU"
 
 
     def open(self):
 
+        # -------------------------
+        # Return to main menu
+        # -------------------------
+
+        self.screen = "main"
+
+        self.title = "MAIN MENU"
+
+        self.items = self.main_items
+
         self.index = 0
+
         super().open()
 
 
-    def up(self):
+    # -------------------------
+    # Page information
+    # -------------------------
 
-        self.index -= 1
+    def page_count(self):
 
-        if self.index < 0:
-            self.index = len(self.items) - 1
+        """
+        Return the total number of pages
+        needed for the current menu.
+        """
 
-        self.draw()
+        count = len(self.items)
 
+        pages = (
+            count + self.ITEMS_PER_PAGE - 1
+        ) // self.ITEMS_PER_PAGE
 
-    def down(self):
+        # A menu should always have at least
+        # one page, even if it is temporarily empty.
+        if pages < 1:
 
-        self.index += 1
+            pages = 1
 
-        if self.index >= len(self.items):
-            self.index = 0
-
-        self.draw()
-
-
-    def select(self):
-
-        item = self.items[self.index]
-
-        print("Selected:", item)
-
-
-        if item == "Speed":
-
-                self.speed.open()
-
-                return "speed"
+        return pages
 
 
-        elif item == "Tone":
+    def current_page(self):
 
-            self.tone.open()
+        """
+        Return the current zero-based page number.
 
-            return "tone"
+        Page 1 is returned as 0.
+        Page 2 is returned as 1.
+        """
 
-
-        elif item == "Back":
-
-            return "back"
-
-
-
-    def draw(self):
-
-        self.display.tft.fill(0)
+        return self.index // self.ITEMS_PER_PAGE
 
 
-        self.display.tft.text(
-            self.display.font,
-            "SETTINGS",
-            90,
-            20,
-            0xFFE0
+    def page_text(self):
+
+        """
+        Return text shown in the corner,
+        for example:
+
+            1/1
+            1/2
+            2/2
+        """
+
+        return "{}/{}".format(
+            self.current_page() + 1,
+            self.page_count()
         )
 
 
-        y = 70
+    # -------------------------
+    # Item navigation
+    # -------------------------
 
-        for i, item in enumerate(self.items):
+    def up(self, amount=1):
 
-            if i == self.index:
+        self.index -= amount
 
-                prefix = "> "
+        # Wrap from the first item
+        # to the last item.
+        while self.index < 0:
 
-            else:
+            self.index += len(self.items)
 
-                prefix = "  "
+        self.draw()
 
 
-            # left side
-            self.display.tft.text(
-                self.display.font,
-                prefix + item,
-                35,
-                y,
-                0xFFFF
+    def down(self, amount=1):
+
+        self.index += amount
+
+        # Wrap from the last item
+        # to the first item.
+        while self.index >= len(self.items):
+
+            self.index -= len(self.items)
+
+        self.draw()
+
+
+    # -------------------------
+    # Page navigation
+    # -------------------------
+
+    # -------------------------
+    # Previous menu page
+    # -------------------------
+
+    def previous_page(self):
+
+        current_page = self.current_page()
+
+        # Already on the first page.
+        # Ignore further hold events.
+        if current_page <= 0:
+
+            return
+
+        previous_page = current_page - 1
+
+        self.index = (
+            previous_page
+            * self.ITEMS_PER_PAGE
+        )
+
+        self.draw()
+
+
+    # -------------------------
+    # Next menu page
+    # -------------------------
+
+    def next_page(self):
+
+        current_page = self.current_page()
+
+        last_page = self.page_count() - 1
+
+        # Already on the last page.
+        # Ignore further hold events.
+        if current_page >= last_page:
+
+            return
+
+        next_page = current_page + 1
+
+        self.index = (
+            next_page
+            * self.ITEMS_PER_PAGE
+        )
+
+        self.draw()
+
+
+    # -------------------------
+    # Button events
+    # -------------------------
+
+    def update(self, event):
+
+        if event == "UP":
+
+            self.up()
+
+
+        elif event == "DOWN":
+
+            self.down()
+
+
+        elif event == "SELECT":
+
+            return self.select()
+
+
+        elif event == "UP_REPEAT":
+
+            self.previous_page()
+
+
+        elif event == "DOWN_REPEAT":
+
+            self.next_page()
+
+
+        elif event == "SELECT_REPEAT":
+
+            # Reserved for future use.
+            # Holding Select currently does nothing.
+            pass
+
+
+        return None
+
+
+    # -------------------------
+    # Select current item
+    # -------------------------
+
+    def select(self):
+
+        selected = self.items[self.index]
+
+        print("SELECT:", selected)
+
+
+    # -------------------------
+    # MAIN MENU
+    # -------------------------
+
+        if self.screen == "main":
+
+            if selected == "Practice":
+                
+                return "practice"
+            
+            elif selected == "Learn":
+
+                return "learn"
+
+            elif selected == "Settings":
+
+                return "settings"
+
+
+            elif selected == "Keyer Mode":
+
+                self.screen = "keyer"
+
+                self.title = "KEYER MODE"
+
+                self.items = self.keyer_items
+
+                self.index = 0
+
+
+            elif selected == "About":
+
+                print("CW Trainer")
+
+                print("Version 1.0")
+
+
+    # -------------------------
+    # KEYER MODE
+    # -------------------------
+
+        elif self.screen == "keyer":
+
+            if selected == "Back":
+
+                self.open()
+
+                return None
+
+            print("Mode:", selected)
+
+
+        self.draw()
+
+        return None
+
+
+    # -------------------------
+    # Draw menu
+    # -------------------------
+
+    def draw(self):
+
+        page = self.current_page()
+
+        page_text = self.page_text()
+
+
+        # -------------------------
+        # New display interface
+        # -------------------------
+        #
+        # We will update display.py next so that
+        # show_menu() accepts page and page_text.
+        #
+        # The fallback keeps this menu compatible
+        # with the current display.py until then.
+        # -------------------------
+
+        try:
+
+            self.display.show_menu(
+                self.title,
+                self.items,
+                self.index,
+                page,
+                self.ITEMS_PER_PAGE,
+                page_text
             )
 
+        except TypeError:
 
-            # current values
-            value = ""
-
-
-            if item == "Speed":
-
-                value = str(config.WPM) + " WPM"
-
-
-            elif item == "Tone":
-
-                value = str(config.SIDETONE_FREQ) + " Hz"
-
-
-            self.display.tft.text(
-                self.display.font,
-                value,
-                170,
-                y,
-                0xFFFF
+            self.display.show_menu(
+                self.title,
+                self.items,
+                self.index
             )
-
-
-            y += 30
-
-
-
         self.display.show_softkeys(
-            "CHANGE",
+            "SELECT",
             "DOWN",
-            " UP"
+            "  UP"
         )

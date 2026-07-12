@@ -19,7 +19,6 @@ class SingleCharacter(Screen):
 
         self.display = display
 
-        # The same keyer object used by app.py
         self.keyer = keyer
 
         self.parent = None
@@ -28,10 +27,13 @@ class SingleCharacter(Screen):
             config.WPM
         )
 
-        # Use letters for the first lesson
+        # Letters and digits
         self.characters = []
 
-        for character in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        for character in (
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "1234567890"
+        ):
 
             if character in MORSE:
 
@@ -39,9 +41,14 @@ class SingleCharacter(Screen):
                     character
                 )
 
+        # Current character the user should send
         self.target = ""
 
+        # Last pattern sent by the user
         self.input_pattern = ""
+
+        # Character represented by the pattern
+        self.input_character = ""
 
         self.result_text = ""
 
@@ -49,7 +56,7 @@ class SingleCharacter(Screen):
 
         self.hint_visible = False
 
-        self.answered = False
+        self.wrong_attempts = 0
 
 
     # -------------------------
@@ -58,7 +65,6 @@ class SingleCharacter(Screen):
 
     def open(self):
 
-        # Apply the latest configured speed
         self.keyer.set_speed(
             config.WPM
         )
@@ -67,16 +73,21 @@ class SingleCharacter(Screen):
             config.WPM
         )
 
-        self.new_character()
+        self.select_character(
+            clear_feedback=True
+        )
 
         super().open()
 
 
     # -------------------------
-    # Select another character
+    # Select random character
     # -------------------------
 
-    def new_character(self):
+    def select_character(
+        self,
+        clear_feedback=True
+    ):
 
         previous = self.target
 
@@ -102,15 +113,22 @@ class SingleCharacter(Screen):
 
         self.decoder.clear()
 
-        self.input_pattern = ""
+        self.wrong_attempts = 0
 
-        self.result_text = ""
-
-        self.result_color = st7789.WHITE
-
+        # Hide the hint for each new target.
         self.hint_visible = False
 
-        self.answered = False
+        if clear_feedback:
+
+            self.input_pattern = ""
+
+            self.input_character = ""
+
+            self.result_text = ""
+
+            self.result_color = (
+                st7789.WHITE
+            )
 
 
     # -------------------------
@@ -118,8 +136,8 @@ class SingleCharacter(Screen):
     # -------------------------
     #
     # SELECT = Back
-    # DOWN   = Next
-    # UP     = Show / Hide
+    # DOWN   = Next character
+    # UP     = Show / Hide pattern
     # -------------------------
 
     def update(self, event):
@@ -131,18 +149,22 @@ class SingleCharacter(Screen):
 
         elif event == "DOWN":
 
-            self.new_character()
+            # Manually skip to another character.
+            self.select_character(
+                clear_feedback=True
+            )
 
             self.draw()
 
 
         elif event == "UP":
 
+            # Hint is always available.
             self.hint_visible = (
                 not self.hint_visible
             )
 
-            self.draw_hint()
+            self.draw_target_area()
 
             self.draw_softkeys()
 
@@ -161,11 +183,24 @@ class SingleCharacter(Screen):
         dash_value
     ):
 
-        # Once an answer has been checked,
-        # NEXT starts another character.
-        if self.answered:
+        # When the first element of a new
+        # attempt arrives, remove the previous
+        # answer and result.
+        #
+        # This lets the previous correct answer
+        # remain visible while the next target
+        # is already displayed.
+        if not self.decoder.buffer:
 
-            return
+            self.input_pattern = ""
+
+            self.input_character = ""
+
+            self.result_text = ""
+
+            self.draw_input()
+
+            self.draw_result()
 
 
         if element == dot_value:
@@ -200,19 +235,32 @@ class SingleCharacter(Screen):
 
         pattern, character = result
 
-        # Ignore the later word-space event.
+        # Ignore later word-space events.
         if not pattern:
 
             return
 
-
-        self.input_pattern = pattern
 
         expected_pattern = MORSE.get(
             self.target,
             ""
         )
 
+        self.input_pattern = pattern
+
+        # Show what the transmitted pattern means.
+        if character:
+
+            self.input_character = character
+
+        else:
+
+            self.input_character = "?"
+
+
+        # -------------------------
+        # Correct answer
+        # -------------------------
 
         if pattern == expected_pattern:
 
@@ -222,55 +270,112 @@ class SingleCharacter(Screen):
                 st7789.GREEN
             )
 
+            print(
+                "Target:",
+                self.target,
+                expected_pattern,
+                "Input:",
+                pattern,
+                self.input_character,
+                "CORRECT"
+            )
+
+            # Display the completed answer.
+            self.draw_input()
+
+            self.draw_result()
+
+            # Automatically select the next target,
+            # but keep the previous sent pattern,
+            # decoded character and result visible.
+            self.select_character(
+                clear_feedback=False
+            )
+
+            self.draw_target_area()
+
+            self.draw_softkeys()
+
+
+        # -------------------------
+        # Incorrect answer
+        # -------------------------
+
         else:
 
-            self.result_text = "X WRONG"
+            self.wrong_attempts += 1
+
+            self.result_text = "INCORRECT"
 
             self.result_color = (
                 st7789.RED
             )
 
+            # Automatically reveal the correct
+            # pattern after three incorrect tries.
+            if self.wrong_attempts >= 3:
 
-        self.answered = True
-
-        # Reveal the correct answer after
-        # the user's attempt.
-        self.hint_visible = True
-
-        self.draw_input()
-
-        self.draw_hint()
-
-        self.draw_result()
-
-        self.draw_softkeys()
+                self.hint_visible = True
 
 
-        print(
-            "Target:",
-            self.target,
-            expected_pattern,
-            "Input:",
-            pattern,
-            self.result_text
-        )
+            print(
+                "Target:",
+                self.target,
+                expected_pattern,
+                "Input:",
+                pattern,
+                self.input_character,
+                "INCORRECT",
+                self.wrong_attempts
+            )
+
+            self.draw_input()
+
+            self.draw_result()
+
+            self.draw_target_area()
+
+            self.draw_softkeys()
+
+            # Prepare for another attempt at
+            # the same character.
+            self.decoder.clear()
 
 
     # -------------------------
-    # Draw hint
+    # Draw current target
     # -------------------------
 
-    def draw_hint(self):
+    def draw_target_area(self):
 
+        # Clear target character area
         self.display.tft.fill_rect(
-            190,
+            10,
             68,
-            120,
+            130,
             25,
             st7789.BLACK
         )
 
+        # Clear pattern hint area
+        self.display.tft.fill_rect(
+            185,
+            68,
+            125,
+            25,
+            st7789.BLACK
+        )
 
+        # Current target character
+        self.display.tft.text(
+            self.display.font,
+            self.target,
+            24,
+            68,
+            st7789.GREEN
+        )
+
+        # Optional Morse pattern hint
         if self.hint_visible:
 
             pattern = MORSE.get(
@@ -301,13 +406,25 @@ class SingleCharacter(Screen):
             st7789.BLACK
         )
 
-        self.display.tft.text(
-            self.display.font,
-            self.input_pattern,
-            10,
-            130,
-            st7789.WHITE
-        )
+        if self.input_pattern:
+
+            self.display.tft.text(
+                self.display.font,
+                self.input_pattern,
+                10,
+                130,
+                st7789.WHITE
+            )
+
+        if self.input_character:
+
+            self.display.tft.text(
+                self.display.font,
+                self.input_character,
+                220,
+                130,
+                st7789.WHITE
+            )
 
 
     # -------------------------
@@ -317,20 +434,19 @@ class SingleCharacter(Screen):
     def draw_result(self):
 
         self.display.tft.fill_rect(
-            105,
+            125,
             168,
-            205,
+            185,
             25,
             st7789.BLACK
         )
-
 
         if self.result_text:
 
             self.display.tft.text(
                 self.display.font,
                 self.result_text,
-                105,
+                125,
                 168,
                 self.result_color
             )
@@ -349,7 +465,6 @@ class SingleCharacter(Screen):
         else:
 
             right_label = " SHOW"
-
 
         self.display.show_softkeys(
             "BACK",
@@ -379,7 +494,7 @@ class SingleCharacter(Screen):
 
         self.display.tft.text(
             self.display.font,
-            "CHARACTER",
+            "SEND",
             10,
             42,
             st7789.YELLOW
@@ -395,26 +510,21 @@ class SingleCharacter(Screen):
 
 
         # -------------------------
-        # Target character
+        # User input headings
         # -------------------------
 
         self.display.tft.text(
             self.display.font,
-            self.target,
-            65,
-            68,
-            st7789.GREEN
+            "YOU SENT",
+            10,
+            105,
+            st7789.YELLOW
         )
 
-
-        # -------------------------
-        # User input heading
-        # -------------------------
-
         self.display.tft.text(
             self.display.font,
-            "YOUR INPUT",
-            10,
+            "THAT IS",
+            170,
             105,
             st7789.YELLOW
         )
@@ -426,14 +536,14 @@ class SingleCharacter(Screen):
 
         self.display.tft.text(
             self.display.font,
-            "RESULT:",
+            "RESULT",
             10,
             168,
             st7789.YELLOW
         )
 
 
-        self.draw_hint()
+        self.draw_target_area()
 
         self.draw_input()
 

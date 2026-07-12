@@ -91,7 +91,8 @@ class App:
         )
         
         self.single_character = SingleCharacter(
-            self.display
+            self.display,
+            self.keyer
         )
 
         # -------------------------
