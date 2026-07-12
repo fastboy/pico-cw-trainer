@@ -26,7 +26,7 @@ class Speed(Screen):
         # the Speed editor is opened.
         self.value = config.WPM
 
-        self.draw()
+        super().open()
 
 
     # -------------------------

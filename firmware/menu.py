@@ -71,7 +71,7 @@ class Menu(Screen):
 
         self.index = 0
 
-        self.draw()
+        super().open()
 
 
     # -------------------------

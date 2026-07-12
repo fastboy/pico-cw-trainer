@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 from practice import Practice
 import time
-
+from single_character import SingleCharacter
 
 from display import Display
 from input import Input
@@ -36,7 +36,7 @@ class App:
         )
 
         self.settings = Settings(
-            self.display
+            self.displays
         )
 
         self.speed = Speed(
@@ -47,7 +47,10 @@ class App:
             self.display
         )
 
-        self.practice - Practice(
+        self.practice = Practice(
+            self.display
+        )
+        self.single_character = SingleCharacter(
             self.display
         )
 
@@ -62,6 +65,8 @@ class App:
         self.tone.parent = self.settings
 
         self.practice.parent = self.menu
+        
+        self.single_character.parent = self.practice
 
 
         # -------------------------
@@ -85,6 +90,7 @@ class App:
             "speed": self.speed,
             "tone": self.tone,
             "practice": self.practice,
+            "single_character": self.single_character,
         }
 
 
@@ -186,7 +192,26 @@ class App:
         self.keyer.update(
             time.ticks_ms()
         )
+        
+        # -------------------------
+        # Keyer events
+        # -------------------------
 
+        for keyer_event in self.keyer.get_events():
+
+            if hasattr(
+                self.current_screen,
+                "add_element"
+            ):
+
+                self.current_screen.add_element(
+
+                    keyer_event,
+
+                    self.keyer.DOT,
+
+                    self.keyer.DASH
+                )
 
         # -------------------------
         # Audio
@@ -204,6 +229,16 @@ class App:
                 0
             )
 
+        # -------------------------
+        # Screen timer
+        # -------------------------
+
+        if hasattr(
+            self.current_screen,
+            "tick"
+        ):
+
+            self.current_screen.tick()
 
         # -------------------------
         # Buttons
@@ -222,4 +257,5 @@ class App:
                 self.change_screen(
                     result
                 )
+
 

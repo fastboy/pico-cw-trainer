@@ -1,4 +1,3 @@
-```python
 from machine import Pin, SPI
 import st7789
 import vga1_16x16 as font
@@ -19,7 +18,6 @@ class Display:
 
     WIDTH = 320
     HEIGHT = 240
-
 
     def __init__(self):
 
@@ -89,6 +87,10 @@ class Display:
     # Main title
     # -------------------------
 
+    def clear(self):
+
+        self.tft.fill(0)
+        
     def title(self):
 
         self.tft.text(
@@ -408,4 +410,5 @@ class Display:
             216,
             st7789.WHITE
         )
-```
+
+

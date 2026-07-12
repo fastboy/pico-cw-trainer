@@ -44,7 +44,7 @@ class Practice(Screen):
 
         self.index = 0
 
-        self.draw()
+        super().open()
 
 
     # -------------------------
@@ -180,12 +180,6 @@ class Practice(Screen):
 
         print("Practice:", selected)
 
-        #
-        # First milestone:
-        # only Single Characters will eventually
-        # launch the trainer.
-        #
-        
         # -------------------------
         # Return to main menu
         # -------------------------
@@ -199,13 +193,50 @@ class Practice(Screen):
         # Practice modes
         # -------------------------
 
-        if selected == "Single Characters":
+        if selected == "Single Character":
 
-            print("Trainer will start here")
+            print("Starting Single Character practice")
+            
+            return "single_character"
 
-        else:
+        elif selected == "Character Groups":
 
-            print("Coming soon...")
+            print("Character Groups coming soon")
+
+
+        elif selected == "Random Character":
+
+            print("Random Character coming soon")
+
+
+        elif selected == "Random Words":
+
+            print("Random Words coming soon")
+
+
+        elif selected == "Callsigns":
+
+            print("Callsigns coming soon")
+
+
+        elif selected == "Prosigns":
+
+            print("Prosigns coming soon")
+
+
+        elif selected == "Q-Codes":
+
+            print("Q-Codes coming soon")
+
+
+        elif selected == "Mixed Text":
+
+            print("Mixed Text coming soon")
+
+
+        elif selected == "Game":
+
+            print("Game coming soon")
 
         return None
 

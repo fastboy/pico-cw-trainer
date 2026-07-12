@@ -21,7 +21,8 @@ class Tone(Screen):
     def open(self):
 
         self.value = config.SIDETONE_FREQ
-        self.draw()
+
+        super().open()
 
     # -------------------------
     # Button events

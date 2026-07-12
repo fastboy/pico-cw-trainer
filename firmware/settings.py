@@ -24,7 +24,7 @@ class Settings:
     def open(self):
 
         self.index = 0
-        self.draw()
+        super().open()
 
 
     def up(self):
