@@ -1,9 +1,12 @@
 from machine import Pin, PWM
-from practice import Practice
 import time
 import config
+
 from learn import Learn
+from practice import Practice
 from single_character import SingleCharacter
+from random_group import RandomGroup
+from random_words import RandomWords
 
 from display import Display
 from input import Input
@@ -94,22 +97,29 @@ class App:
             self.display,
             self.keyer
         )
+        self.random_group = RandomGroup(
+            self.display,
+            self.keyer
+        )
+        self.random_words = RandomWords(
+            self.display,
+            self.keyer
+        )
 
         # -------------------------
         # Screen hierarchy
         # -------------------------
 
         self.settings.parent = self.menu
-
         self.speed.parent = self.settings
-
         self.tone.parent = self.settings
 
         self.practice.parent = self.menu
         
         self.learn.parent = self.menu
-        
         self.single_character.parent = self.learn
+        self.random_group.parent = self.learn
+        self.random_words.parent = self.learn
         
 
 
@@ -134,8 +144,10 @@ class App:
             "speed": self.speed,
             "tone": self.tone,
             "practice": self.practice,
-            "single_character": self.single_character,
             "learn": self.learn,
+            "single_character": self.single_character,
+            "random_group": self.random_group,
+            "random_words": self.random_words,
         }
 
 

@@ -22,11 +22,10 @@ class Learn(Screen):
 
             "Single Character",
             "Character Groups",
-            "Random Character",
             "Random Words",
             "Callsigns",
-
             "Prosigns",
+
             "Q-Codes",
             "Mixed Text",
             "Game",
@@ -178,7 +177,7 @@ class Learn(Screen):
 
         selected = self.items[self.index]
 
-        print("Practice:", selected)
+        print("Learan:", selected)
 
         # -------------------------
         # Return to main menu
@@ -201,17 +200,12 @@ class Learn(Screen):
 
         elif selected == "Character Groups":
 
-            print("Character Groups coming soon")
-
-
-        elif selected == "Random Character":
-
-            print("Random Character coming soon")
+            return "random_group"
 
 
         elif selected == "Random Words":
 
-            print("Random Words coming soon")
+            return "random_words"
 
 
         elif selected == "Callsigns":
@@ -272,3 +266,4 @@ class Learn(Screen):
             "DOWN"
 
         )
+
