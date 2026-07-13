@@ -82,7 +82,10 @@ class Display:
             st7789.BLACK
         )
 
-
+        self.tft.inversion_mode(False)
+        self.tft.fill(
+            st7789.BLACK
+        )
     # -------------------------
     # Main title
     # -------------------------
