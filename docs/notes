@@ -79,3 +79,88 @@ Editor hold	Cancel/Back	  Fast +	 Fast −
 Practice	 Exit	      Clear	     Speed
 Trainer	     Exit	       Dit	      Dah
 
+available colors
+st7789.WHITE
+st7789.GREEN
+st7789.RED
+st7789.BLACK
+st7789.CYAN
+st7789.BLUE
+st7789.MAGENTA
+st7789.YELLOW
+
+Each learning screen decides where its own lines belong:
+
+self.display.divider(38)
+self.display.divider(112)
+self.display.divider(165)
+self.display.divider(205)
+
+Those values are only a starting layout:
+
+0–38       title and WPM
+39–112     SEND and hint
+113–165    user input
+166–205    result or feedback
+206–239    soft buttons
+
+The important part is to place each line between existing text areas, not through them. Since screens do not all use identical coordinates, you should not blindly copy the same four positions into every file.
+
+The screens that likely need checking are:
+
+single_character.py
+random_groups.py
+random_words.py
+practice.py, if you want sections there too
+
+power - 1 li-ion cell
+How I would wire it
+
+For one-cell operation:
+
+Li-ion cell
+    │
+protection / charger
+    │
+power switch
+    │
+3.3 V buck-boost
+    │
+    ├── Pico 3V3 pin
+    ├── display 3.3 V
+    └── speaker transistor supply
+    Everything shares ground.
+    The speaker still does not connect directly to the regulator output as an audio signal. The regulated 3.3 V powers the speaker/transistor circuit, while GP4 provides PWM to the transistor through the resistor.
+
+3.3 V regulated
+     │
+   speaker
+     │
+ transistor
+     │
+    GND
+
+GP4 ─ resistor ─ transistor base
+
+But there are two possible power architectures
+Simpler architecture
+1S Li-ion → Pico VSYS
+Pico 3V3 → display and speaker circuit
+
+This uses the Pico’s onboard regulator. It is simple and probably adequate.
+
+More controlled architecture
+1S Li-ion → buck-boost 3.3 V
+                 │
+                 ├── Pico 3V3
+                 ├── display
+                 └── speaker stage
+However, supplying the Pico through 3V3 bypasses its onboard regulator, so USB power interaction must be handled carefully. You should not casually connect USB while an external 3.3 V regulator is driving the same rail.
+
+For a prototype, the safest approach is probably:
+
+battery mode:
+1S cell → buck-boost 3.3 V → unit
+
+USB programming mode:
+battery power switched off

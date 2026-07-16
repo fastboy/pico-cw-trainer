@@ -1,5 +1,6 @@
 from machine import Pin, SPI
 import st7789
+import theme
 import vga1_16x16 as font
 
 
@@ -78,13 +79,10 @@ class Display:
             color_order=st7789.BGR,
         )
 
-        self.tft.fill(
-            st7789.BLACK
-        )
 
         self.tft.inversion_mode(False)
         self.tft.fill(
-            st7789.BLACK
+            theme.BACKGROUND
         )
     # -------------------------
     # Main title
@@ -101,7 +99,7 @@ class Display:
             "CW TRAINER",
             10,
             10,
-            st7789.YELLOW
+            theme.TITLE
         )
 
 
@@ -116,7 +114,7 @@ class Display:
             45,
             190,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         self.tft.text(
@@ -124,7 +122,7 @@ class Display:
             pattern,
             10,
             45,
-            st7789.WHITE
+            theme.PATTERN
         )
 
 
@@ -160,7 +158,7 @@ class Display:
             title,
             40,
             10,
-            st7789.YELLOW
+            theme.TITLE
         )
 
 
@@ -192,7 +190,7 @@ class Display:
             page_text,
             page_x,
             10,
-            st7789.CYAN
+            theme.TOP_INDICATOR
         )
 
 
@@ -250,13 +248,13 @@ class Display:
 
                 text = "> " + item
 
-                color = st7789.GREEN
+                color = theme.MENU_SELECTED
 
             else:
 
                 text = "  " + item
 
-                color = st7789.WHITE
+                color = theme.MENU_NORMAL
 
 
             self.tft.text(
@@ -281,7 +279,7 @@ class Display:
             45,
             40,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         self.tft.text(
@@ -289,7 +287,7 @@ class Display:
             letter,
             160,
             45,
-            st7789.GREEN
+            theme.LETTER
         )
 
 
@@ -304,7 +302,7 @@ class Display:
             10,
             90,
             20,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         text = (
@@ -317,7 +315,7 @@ class Display:
             text,
             200,
             10,
-            st7789.CYAN
+            themme.TOP_INDICATOR
         )
 
     # -------------------------
@@ -424,7 +422,7 @@ class Display:
 
             120,
 
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
 
@@ -444,7 +442,7 @@ class Display:
 
                 y,
 
-                st7789.WHITE
+                theme.TEXT
             )
 
             y += line_height
@@ -478,7 +476,7 @@ class Display:
             208,
             self.WIDTH,
             32,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         self.tft.text(
@@ -486,7 +484,7 @@ class Display:
             left,
             8,
             216,
-            st7789.WHITE
+            theme.SOFT_BUTTON
         )
 
         self.tft.text(
@@ -494,7 +492,7 @@ class Display:
             center,
             128,
             216,
-            st7789.WHITE
+            theme.SOFT_BUTTON
         )
 
         self.tft.text(
@@ -502,8 +500,26 @@ class Display:
             right,
             232,
             216,
-            st7789.WHITE
+            theme.SOFT_BUTTON
+        )
+    def divider(self, y, color=theme.DIVIDER):
+
+        self.tft.hline(
+            0,
+            y,
+            self.WIDTH,
+            color
         )
 
+
+    def section_label(self, text, x, y):
+
+        self.tft.text(
+            self.font,
+            text,
+            x,
+            y,
+            theme.SECTION_LABEL
+        )
 
 

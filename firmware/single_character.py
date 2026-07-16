@@ -1,3 +1,4 @@
+import theme
 from screen import Screen
 from decoder import Decoder
 from morse import MORSE
@@ -127,7 +128,7 @@ class SingleCharacter(Screen):
             self.result_text = ""
 
             self.result_color = (
-                st7789.WHITE
+                theme.TEXT
             )
 
 
@@ -267,7 +268,7 @@ class SingleCharacter(Screen):
             self.result_text = "CORRECT"
 
             self.result_color = (
-                st7789.GREEN
+                theme.SUCCESS
             )
 
             print(
@@ -308,7 +309,7 @@ class SingleCharacter(Screen):
             self.result_text = "INCORRECT"
 
             self.result_color = (
-                st7789.RED
+                theme.ERROR
             )
 
             # Automatically reveal the correct
@@ -354,7 +355,7 @@ class SingleCharacter(Screen):
             68,
             130,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         # Clear pattern hint area
@@ -363,7 +364,7 @@ class SingleCharacter(Screen):
             68,
             125,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         # Current target character
@@ -372,7 +373,7 @@ class SingleCharacter(Screen):
             self.target,
             24,
             68,
-            st7789.GREEN
+            theme.TARGET
         )
 
         # Optional Morse pattern hint
@@ -388,7 +389,7 @@ class SingleCharacter(Screen):
                 pattern,
                 205,
                 68,
-                st7789.CYAN
+                theme.PATTERN
             )
 
 
@@ -403,7 +404,7 @@ class SingleCharacter(Screen):
             130,
             300,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         if self.input_pattern:
@@ -413,7 +414,7 @@ class SingleCharacter(Screen):
                 self.input_pattern,
                 10,
                 130,
-                st7789.WHITE
+                theme.INPUT
             )
 
         if self.input_character:
@@ -423,7 +424,7 @@ class SingleCharacter(Screen):
                 self.input_character,
                 220,
                 130,
-                st7789.WHITE
+                theme.INPUT
             )
 
 
@@ -438,7 +439,7 @@ class SingleCharacter(Screen):
             168,
             185,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         if self.result_text:
@@ -497,7 +498,7 @@ class SingleCharacter(Screen):
             "SEND",
             10,
             42,
-            st7789.YELLOW
+            theme.LABEL
         )
 
         self.display.tft.text(
@@ -505,7 +506,7 @@ class SingleCharacter(Screen):
             "PATTERN",
             190,
             42,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 
@@ -518,7 +519,7 @@ class SingleCharacter(Screen):
             "YOU SENT",
             10,
             105,
-            st7789.YELLOW
+            theme.LABEL
         )
 
         self.display.tft.text(
@@ -526,7 +527,7 @@ class SingleCharacter(Screen):
             "THAT IS",
             170,
             105,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 
@@ -539,7 +540,7 @@ class SingleCharacter(Screen):
             "RESULT",
             10,
             168,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 
@@ -550,3 +551,7 @@ class SingleCharacter(Screen):
         self.draw_result()
 
         self.draw_softkeys()
+        self.display.divider(38)
+        self.display.divider(112)
+        self.display.divider(165)
+        self.display.divider(205)

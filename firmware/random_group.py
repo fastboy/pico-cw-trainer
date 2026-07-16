@@ -1,3 +1,4 @@
+import theme
 from screen import Screen
 from decoder import Decoder
 from morse import MORSE
@@ -55,7 +56,7 @@ class RandomGroup(Screen):
 
         self.result_text = ""
 
-        self.result_color = st7789.WHITE
+        self.result_color = st7789.WHITE #this is just initial value, it will be set to red or green after the first attempt
 
         self.hint_visible = False
 
@@ -140,7 +141,9 @@ class RandomGroup(Screen):
             self.sent_patterns = []
 
             self.result_text = ""
-
+            # Reset to default.
+            # The color is not used while result_text is empty,
+            # but this keeps the object in a known state.
             self.result_color = (
                 st7789.WHITE
             )
@@ -159,8 +162,8 @@ class RandomGroup(Screen):
         self.sent_patterns = []
 
         self.result_text = ""
-
-        self.result_color = st7789.WHITE
+        # Reset to default. wont be used while result_text is empty, but this keeps the object in a known state.
+        self.result_color = st7789.WHITE 
 
         self.starting_new_attempt = False
 
@@ -293,9 +296,11 @@ class RandomGroup(Screen):
         if self.sent_group == self.target_group:
 
             self.result_text = "CORRECT"
-
+            # Reset to default.
+            # The color is not used while result_text is empty,
+            # but this keeps the object in a known state.
             self.result_color = (
-                st7789.GREEN
+                theme.SUCCESS
             )
 
             print(
@@ -332,7 +337,7 @@ class RandomGroup(Screen):
             self.result_text = "INCORRECT"
 
             self.result_color = (
-                st7789.RED
+                theme.ERROR
             )
 
             # After three incorrect complete
@@ -373,8 +378,17 @@ class RandomGroup(Screen):
     def get_hint_lines(self):
 
         lines = []
-
         current_line = ""
+
+        hint_x = 113
+        right_margin = 8
+        character_width = 16
+
+        max_chars = (
+            self.display.WIDTH
+            - hint_x
+            - right_margin
+        ) // character_width
 
         for character in self.target_group:
 
@@ -395,11 +409,7 @@ class RandomGroup(Screen):
 
                 candidate = pattern
 
-
-            # The normal font is approximately
-            # 16 pixels wide. Keep each line short
-            # enough to fit beside the target.
-            if len(candidate) <= 12:
+            if len(candidate) <= max_chars:
 
                 current_line = candidate
 
@@ -413,13 +423,11 @@ class RandomGroup(Screen):
 
                 current_line = pattern
 
-
         if current_line:
 
             lines.append(
                 current_line
             )
-
 
         return lines[:2]
 
@@ -435,7 +443,7 @@ class RandomGroup(Screen):
             65,
             300,
             42,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         # Group to send
@@ -444,7 +452,7 @@ class RandomGroup(Screen):
             self.target_group,
             24,
             68,
-            st7789.GREEN
+            theme.TARGET
         )
 
 
@@ -461,9 +469,9 @@ class RandomGroup(Screen):
                 self.display.tft.text(
                     self.display.font,
                     line,
-                    145,
+                    108,
                     y,
-                    st7789.CYAN
+                    theme.HINT
                 )
 
                 y += 18
@@ -496,7 +504,7 @@ class RandomGroup(Screen):
             138,
             300,
             20,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         if pattern_text:
@@ -506,7 +514,7 @@ class RandomGroup(Screen):
                 pattern_text,
                 10,
                 138,
-                st7789.WHITE
+                theme.PATTERN
             )
 
 
@@ -521,7 +529,7 @@ class RandomGroup(Screen):
             122,
             300,
             38,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         if self.sent_group:
@@ -531,7 +539,7 @@ class RandomGroup(Screen):
                 self.sent_group,
                 190,
                 122,
-                st7789.WHITE
+                theme.INPUT
             )
 
 
@@ -546,7 +554,7 @@ class RandomGroup(Screen):
                 pattern_text,
                 10,
                 140,
-                st7789.WHITE
+                theme.PATTERN
             )
 
 
@@ -561,7 +569,7 @@ class RandomGroup(Screen):
             168,
             185,
             25,
-            st7789.BLACK
+            theme.BACKGROUND
         )
 
         if self.result_text:
@@ -621,7 +629,7 @@ class RandomGroup(Screen):
             "SEND GROUP",
             10,
             42,
-            st7789.YELLOW
+            theme.LABEL
         )
 
         self.display.tft.text(
@@ -629,7 +637,7 @@ class RandomGroup(Screen):
             "PATTERN",
             190,
             42,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 
@@ -638,7 +646,7 @@ class RandomGroup(Screen):
             "YOU SENT",
             10,
             105,
-            st7789.YELLOW
+            theme.LABEL
         )
 
         self.display.tft.text(
@@ -646,7 +654,7 @@ class RandomGroup(Screen):
             "THAT IS",
             170,
             105,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 
@@ -655,7 +663,7 @@ class RandomGroup(Screen):
             "RESULT",
             10,
             168,
-            st7789.YELLOW
+            theme.LABEL
         )
 
 

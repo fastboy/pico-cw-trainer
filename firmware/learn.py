@@ -261,9 +261,9 @@ class Learn(Screen):
 
             "SELECT",
 
-            "UP",
+            "DOWN",
 
-            "DOWN"
+            "UP"
 
         )
 
