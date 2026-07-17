@@ -1,557 +1,538 @@
-import theme
-from screen import Screen
-from decoder import Decoder
-from morse import MORSE
-
-import config
-import random
+from machine import Pin, SPI
 import st7789
+import theme
+import vga1_16x16 as font
 
 
-class SingleCharacter(Screen):
-
-    def __init__(
-        self,
-        display,
-        keyer
-    ):
-
-        super().__init__()
-
-        self.display = display
-
-        self.keyer = keyer
-
-        self.parent = None
-
-        self.decoder = Decoder(
-            config.WPM
-        )
-
-        # Letters and digits
-        self.characters = []
-
-        for character in (
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "1234567890"
-        ):
-
-            if character in MORSE:
-
-                self.characters.append(
-                    character
-                )
-
-        # Current character the user should send
-        self.target = ""
-
-        # Last pattern sent by the user
-        self.input_pattern = ""
-
-        # Character represented by the pattern
-        self.input_character = ""
-
-        self.result_text = ""
-
-        self.result_color = st7789.WHITE
-
-        self.hint_visible = False
-
-        self.wrong_attempts = 0
-
+class Display:
 
     # -------------------------
-    # Open screen
-    # -------------------------
-
-    def open(self):
-
-        self.keyer.set_speed(
-            config.WPM
-        )
-
-        self.decoder.set_speed(
-            config.WPM
-        )
-
-        self.select_character(
-            clear_feedback=True
-        )
-
-        super().open()
-
-
-    # -------------------------
-    # Select random character
-    # -------------------------
-
-    def select_character(
-        self,
-        clear_feedback=True
-    ):
-
-        previous = self.target
-
-        if not self.characters:
-
-            self.target = "A"
-
-        else:
-
-            self.target = random.choice(
-                self.characters
-            )
-
-            # Avoid showing the same character
-            # twice in a row when possible.
-            if len(self.characters) > 1:
-
-                while self.target == previous:
-
-                    self.target = random.choice(
-                        self.characters
-                    )
-
-        self.decoder.clear()
-
-        self.wrong_attempts = 0
-
-        # Hide the hint for each new target.
-        self.hint_visible = False
-
-        if clear_feedback:
-
-            self.input_pattern = ""
-
-            self.input_character = ""
-
-            self.result_text = ""
-
-            self.result_color = (
-                theme.TEXT
-            )
-
-
-    # -------------------------
-    # Front buttons
+    # Display dimensions
     # -------------------------
     #
-    # SELECT = Back
-    # DOWN   = Next character
-    # UP     = Show / Hide pattern
+    # Rotation 1 makes the physical
+    # 240 x 320 display appear as:
+    #
+    #     width  = 320
+    #     height = 240
     # -------------------------
 
-    def update(self, event):
+    WIDTH = 320
+    HEIGHT = 240
 
-        if event == "SELECT":
+    def __init__(self):
 
-            return self.parent
-
-
-        elif event == "DOWN":
-
-            # Manually skip to another character.
-            self.select_character(
-                clear_feedback=True
-            )
-
-            self.draw()
+        self.font = font
 
 
-        elif event == "UP":
+        # -------------------------
+        # Backlight
+        # -------------------------
 
-            # Hint is always available.
-            self.hint_visible = (
-                not self.hint_visible
-            )
-
-            self.draw_target_area()
-
-            self.draw_softkeys()
-
-
-        return None
-
-
-    # -------------------------
-    # Receive keyer elements
-    # -------------------------
-
-    def add_element(
-        self,
-        element,
-        dot_value,
-        dash_value
-    ):
-
-        # When the first element of a new
-        # attempt arrives, remove the previous
-        # answer and result.
-        #
-        # This lets the previous correct answer
-        # remain visible while the next target
-        # is already displayed.
-        if not self.decoder.buffer:
-
-            self.input_pattern = ""
-
-            self.input_character = ""
-
-            self.result_text = ""
-
-            self.draw_input()
-
-            self.draw_result()
-
-
-        if element == dot_value:
-
-            self.decoder.add_dot()
-
-
-        elif element == dash_value:
-
-            self.decoder.add_dash()
-
-
-        self.input_pattern = (
-            self.decoder.buffer
+        bl = Pin(
+            22,
+            Pin.OUT
         )
 
-        self.draw_input()
+        bl.value(1)
 
 
-    # -------------------------
-    # Decoder timer
-    # -------------------------
+        # -------------------------
+        # SPI
+        # -------------------------
 
-    def tick(self):
-
-        result = self.decoder.update()
-
-        if not result:
-
-            return
-
-
-        pattern, character = result
-
-        # Ignore later word-space events.
-        if not pattern:
-
-            return
+        spi = SPI(
+            0,
+            baudrate=40000000,
+            polarity=0,
+            phase=0,
+            sck=Pin(18),
+            mosi=Pin(19),
+        )
 
 
-        expected_pattern = MORSE.get(
-            self.target,
+        # -------------------------
+        # Text history
+        # -------------------------
+
+        self.lines = [
+            "",
+            "",
+            "",
             ""
+        ]
+
+
+        # -------------------------
+        # TFT
+        # -------------------------
+
+        self.tft = st7789.ST7789(
+            spi,
+            240,
+            320,
+            reset=Pin(20, Pin.OUT),
+            dc=Pin(21, Pin.OUT),
+            cs=Pin(17, Pin.OUT),
+            backlight=bl,
+            rotation=1,
+            color_order=st7789.BGR,
         )
 
-        self.input_pattern = pattern
 
-        # Show what the transmitted pattern means.
-        if character:
-
-            self.input_character = character
-
-        else:
-
-            self.input_character = "?"
-
-
-        # -------------------------
-        # Correct answer
-        # -------------------------
-
-        if pattern == expected_pattern:
-
-            self.result_text = "CORRECT"
-
-            self.result_color = (
-                theme.SUCCESS
-            )
-
-            print(
-                "Target:",
-                self.target,
-                expected_pattern,
-                "Input:",
-                pattern,
-                self.input_character,
-                "CORRECT"
-            )
-
-            # Display the completed answer.
-            self.draw_input()
-
-            self.draw_result()
-
-            # Automatically select the next target,
-            # but keep the previous sent pattern,
-            # decoded character and result visible.
-            self.select_character(
-                clear_feedback=False
-            )
-
-            self.draw_target_area()
-
-            self.draw_softkeys()
-
-
-        # -------------------------
-        # Incorrect answer
-        # -------------------------
-
-        else:
-
-            self.wrong_attempts += 1
-
-            self.result_text = "INCORRECT"
-
-            self.result_color = (
-                theme.ERROR
-            )
-
-            # Automatically reveal the correct
-            # pattern after three incorrect tries.
-            if self.wrong_attempts >= 3:
-
-                self.hint_visible = True
-
-
-            print(
-                "Target:",
-                self.target,
-                expected_pattern,
-                "Input:",
-                pattern,
-                self.input_character,
-                "INCORRECT",
-                self.wrong_attempts
-            )
-
-            self.draw_input()
-
-            self.draw_result()
-
-            self.draw_target_area()
-
-            self.draw_softkeys()
-
-            # Prepare for another attempt at
-            # the same character.
-            self.decoder.clear()
-
-
+        self.tft.inversion_mode(False)
+        self.tft.fill(
+            theme.BACKGROUND
+        )
     # -------------------------
-    # Draw current target
+    # Main title
     # -------------------------
 
-    def draw_target_area(self):
+    def clear(self):
 
-        # Clear target character area
-        self.display.tft.fill_rect(
+        self.tft.fill(0)
+        
+    def title(self):
+
+        self.tft.text(
+            self.font,
+            "CW TRAINER",
             10,
-            68,
-            130,
-            25,
+            10,
+            theme.TITLE
+        )
+
+
+    # -------------------------
+    # Current Morse pattern
+    # -------------------------
+
+    def show_pattern(self, pattern):
+
+        # Clear the complete input area before
+        # drawing the next character's pattern.
+        #
+        # This removes:
+        # - the previous completed pattern
+        # - the previous decoded letter
+        # - any overflow from a very long pattern
+        self.tft.fill_rect(
+            0,
+            45,
+            self.WIDTH,
+            47,
             theme.BACKGROUND
         )
 
-        # Clear pattern hint area
-        self.display.tft.fill_rect(
-            185,
-            68,
-            125,
-            25,
-            theme.BACKGROUND
-        )
+        if pattern:
 
-        # Current target character
-        self.display.tft.text(
-            self.display.font,
-            self.target,
-            24,
-            68,
-            theme.TARGET
-        )
-
-        # Optional Morse pattern hint
-        if self.hint_visible:
-
-            pattern = MORSE.get(
-                self.target,
-                ""
-            )
-
-            self.display.tft.text(
-                self.display.font,
+            self.tft.text(
+                self.font,
                 pattern,
-                205,
-                68,
+                10,
+                45,
                 theme.PATTERN
             )
 
 
     # -------------------------
-    # Draw user input
+    # Menu
     # -------------------------
 
-    def draw_input(self):
+    def show_menu(
+        self,
+        title,
+        items,
+        selected,
+        page=0,
+        items_per_page=5,
+        page_text="1/1"
+    ):
 
-        self.display.tft.fill_rect(
+        # -------------------------
+        # Clear whole screen
+        # -------------------------
+
+        self.tft.fill(
+            st7789.BLACK
+        )
+
+
+        # -------------------------
+        # Menu title
+        # -------------------------
+
+        self.tft.text(
+            self.font,
+            title,
+            40,
             10,
-            130,
-            300,
-            25,
+            theme.TITLE
+        )
+
+
+        # -------------------------
+        # Page indicator
+        # -------------------------
+        #
+        # The font is 16 pixels wide.
+        # This calculates the text width
+        # and places it near the right edge.
+        #
+        # Examples:
+        #
+        #     1/1
+        #     1/2
+        #     2/2
+        # -------------------------
+
+        page_width = len(page_text) * 16
+
+        page_x = (
+            self.WIDTH
+            - page_width
+            - 8
+        )
+
+        self.tft.text(
+            self.font,
+            page_text,
+            page_x,
+            10,
+            theme.TOP_INDICATOR
+        )
+
+
+        # -------------------------
+        # Current page range
+        # -------------------------
+        #
+        # Page 0:
+        #
+        #     items 0 to 4
+        #
+        # Page 1:
+        #
+        #     items 5 to 9
+        # -------------------------
+
+        first_item = (
+            page * items_per_page
+        )
+
+        last_item = (
+            first_item
+            + items_per_page
+        )
+
+
+        # -------------------------
+        # Visible menu items
+        # -------------------------
+
+        visible_items = items[
+            first_item:last_item
+        ]
+
+
+        # -------------------------
+        # Draw menu items
+        # -------------------------
+
+        y = 50
+
+        for local_index, item in enumerate(
+            visible_items
+        ):
+
+            # Convert the position on this page
+            # back into the full menu index.
+            item_index = (
+                first_item
+                + local_index
+            )
+
+
+            if item_index == selected:
+
+                text = "> " + item
+
+                color = theme.MENU_SELECTED
+
+            else:
+
+                text = "  " + item
+
+                color = theme.MENU_NORMAL
+
+
+            self.tft.text(
+                self.font,
+                text,
+                24,
+                y,
+                color
+            )
+
+            y += 28
+
+
+    # -------------------------
+    # Decoded letter
+    # -------------------------
+
+    def show_letter(self, letter):
+
+        self.tft.fill_rect(
+            0,
+            70,
+            self.WIDTH,
+            22,
             theme.BACKGROUND
         )
 
-        if self.input_pattern:
+        if letter:
 
-            self.display.tft.text(
-                self.display.font,
-                self.input_pattern,
-                10,
-                130,
-                theme.INPUT
+            x = (
+                self.WIDTH - 16
+            ) // 2
+
+            self.tft.text(
+                self.font,
+                letter,
+                x,
+                70,
+                theme.LABEL
             )
 
-        if self.input_character:
-
-            self.display.tft.text(
-                self.display.font,
-                self.input_character,
-                220,
-                130,
-                theme.INPUT
-            )
-
-
     # -------------------------
-    # Draw result
+    # Current speed
     # -------------------------
 
-    def draw_result(self):
+    def show_speed(self, wpm):
 
-        self.display.tft.fill_rect(
-            125,
-            168,
-            185,
-            25,
+        self.tft.fill_rect(
+            230,
+            10,
+            90,
+            20,
             theme.BACKGROUND
         )
 
-        if self.result_text:
+        text = (
+            "WPM "
+            + str(wpm)
+        )
 
-            self.display.tft.text(
-                self.display.font,
-                self.result_text,
-                125,
-                168,
-                self.result_color
+        self.tft.text(
+            self.font,
+            text,
+            200,
+            10,
+            theme.TOP_INDICATOR
+        )
+
+    # -------------------------
+    # Decoded text area
+    # -------------------------
+
+    def show_text(self, text):
+
+        # -------------------------
+        # Text area
+        # -------------------------
+
+        x = 8
+        y = 110
+
+        line_height = 25
+
+        max_chars = 19
+        max_lines = 4
+
+
+        # -------------------------
+        # Wrap text by words
+        # -------------------------
+
+        lines = []
+
+        current_line = ""
+
+
+        for word in text.split(" "):
+
+            # Preserve a pending word gap without
+            # creating multiple empty lines.
+            if not word:
+
+                continue
+
+
+            if not current_line:
+
+                # Split unusually long words
+                while len(word) > max_chars:
+
+                    lines.append(
+                        word[:max_chars]
+                    )
+
+                    word = word[max_chars:]
+
+
+                current_line = word
+
+
+            elif (
+                len(current_line)
+                + 1
+                + len(word)
+                <= max_chars
+            ):
+
+                current_line += " " + word
+
+
+            else:
+
+                lines.append(
+                    current_line
+                )
+
+                while len(word) > max_chars:
+
+                    lines.append(
+                        word[:max_chars]
+                    )
+
+                    word = word[max_chars:]
+
+                current_line = word
+
+
+        if current_line:
+
+            lines.append(
+                current_line
             )
 
 
+        # Keep only the newest visible lines
+        lines = lines[-max_lines:]
+
+
+        # -------------------------
+        # Clear old text
+        # -------------------------
+
+        self.tft.fill_rect(
+
+            0,
+
+            101,
+
+            self.WIDTH,
+
+            119,
+
+            theme.BACKGROUND
+        )
+
+
+        # -------------------------
+        # Draw complete text
+        # -------------------------
+
+        for line in lines:
+
+            self.tft.text(
+
+                self.font,
+
+                line,
+
+                x,
+
+                y,
+
+                theme.TEXT
+            )
+
+            y += line_height
+
+
     # -------------------------
-    # Draw soft keys
+    # Soft-key labels
+    # -------------------------
+    #
+    # These labels describe the short-press
+    # action of the three physical buttons.
+    #
+    # Later we can add a second, smaller row
+    # for hold actions such as:
+    #
+    #     +5
+    #     Cancel
+    #     Page +
     # -------------------------
 
-    def draw_softkeys(self):
+    def show_softkeys(
+        self,
+        left,
+        center,
+        right
+    ):
 
-        if self.hint_visible:
-
-            right_label = " HIDE"
-
-        else:
-
-            right_label = " SHOW"
-
-        self.display.show_softkeys(
-            "BACK",
-            " NEXT",
-            right_label
+        # Clear only the area below
+        # the bottom divider.
+        self.tft.fill_rect(
+            0,
+            221,
+            self.WIDTH,
+            19,
+            theme.BACKGROUND
         )
 
+        self.tft.text(
+            self.font,
+            left,
+            8,
+            223,
+            theme.SOFT_BUTTON
+        )
+
+        self.tft.text(
+            self.font,
+            center,
+            120,
+            223,
+            theme.SOFT_BUTTON
+        )
+
+        self.tft.text(
+            self.font,
+            right,
+            232,
+            223,
+            theme.SOFT_BUTTON
+        )
 
     # -------------------------
-    # Draw complete screen
-    # -------------------------
+    # divider
+    # -------------------------   
+    def divider(self, y, color=theme.DIVIDER):
 
-    def draw(self):
-
-        self.display.clear()
-
-        self.display.title()
-
-        self.display.show_speed(
-            config.WPM
+        self.tft.hline(
+            0,
+            y,
+            self.WIDTH,
+            color
         )
 
 
-        # -------------------------
-        # Headings
-        # -------------------------
-
-        self.display.tft.text(
-            self.display.font,
-            "SEND",
-            10,
-            42,
-            theme.LABEL
-        )
-
-        self.display.tft.text(
-            self.display.font,
-            "PATTERN",
-            190,
-            42,
-            theme.LABEL
-        )
 
 
-        # -------------------------
-        # User input headings
-        # -------------------------
-
-        self.display.tft.text(
-            self.display.font,
-            "YOU SENT",
-            10,
-            105,
-            theme.LABEL
-        )
-
-        self.display.tft.text(
-            self.display.font,
-            "THAT IS",
-            170,
-            105,
-            theme.LABEL
-        )
 
 
-        # -------------------------
-        # Result heading
-        # -------------------------
 
-        self.display.tft.text(
-            self.display.font,
-            "RESULT",
-            10,
-            168,
-            theme.LABEL
-        )
-
-
-        self.draw_target_area()
-
-        self.draw_input()
-
-        self.draw_result()
-
-        self.draw_softkeys()
-        self.display.divider(38)
-        self.display.divider(112)
-        self.display.divider(165)
-        self.display.divider(205)

@@ -366,5 +366,5 @@ class Menu(Screen):
         self.display.show_softkeys(
             "SELECT",
             "DOWN",
-            " UP"
+            "  UP"
         )

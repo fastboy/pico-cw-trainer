@@ -109,21 +109,30 @@ class Display:
 
     def show_pattern(self, pattern):
 
+        # Clear the complete input area before
+        # drawing the next character's pattern.
+        #
+        # This removes:
+        # - the previous completed pattern
+        # - the previous decoded letter
+        # - any overflow from a very long pattern
         self.tft.fill_rect(
-            10,
+            0,
             45,
-            190,
-            25,
+            self.WIDTH,
+            47,
             theme.BACKGROUND
         )
 
-        self.tft.text(
-            self.font,
-            pattern,
-            10,
-            45,
-            theme.PATTERN
-        )
+        if pattern:
+
+            self.tft.text(
+                self.font,
+                pattern,
+                10,
+                45,
+                theme.PATTERN
+            )
 
 
     # -------------------------
@@ -275,21 +284,26 @@ class Display:
     def show_letter(self, letter):
 
         self.tft.fill_rect(
-            160,
-            45,
-            40,
-            25,
+            0,
+            70,
+            self.WIDTH,
+            22,
             theme.BACKGROUND
         )
 
-        self.tft.text(
-            self.font,
-            letter,
-            160,
-            45,
-            theme.LETTER
-        )
+        if letter:
 
+            x = (
+                self.WIDTH - 16
+            ) // 2
+
+            self.tft.text(
+                self.font,
+                letter,
+                x,
+                70,
+                theme.LABEL
+            )
 
     # -------------------------
     # Current speed
@@ -315,7 +329,7 @@ class Display:
             text,
             200,
             10,
-            themme.TOP_INDICATOR
+            theme.TOP_INDICATOR
         )
 
     # -------------------------
@@ -329,7 +343,7 @@ class Display:
         # -------------------------
 
         x = 8
-        y = 90
+        y = 110
 
         line_height = 25
 
@@ -416,11 +430,11 @@ class Display:
 
             0,
 
-            85,
+            101,
 
             self.WIDTH,
 
-            120,
+            119,
 
             theme.BACKGROUND
         )
@@ -470,12 +484,13 @@ class Display:
         right
     ):
 
-        # Clear bottom area.
+        # Clear only the area below
+        # the bottom divider.
         self.tft.fill_rect(
             0,
-            208,
+            221,
             self.WIDTH,
-            32,
+            19,
             theme.BACKGROUND
         )
 
@@ -483,15 +498,15 @@ class Display:
             self.font,
             left,
             8,
-            216,
+            223,
             theme.SOFT_BUTTON
         )
 
         self.tft.text(
             self.font,
             center,
-            128,
-            216,
+            120,
+            223,
             theme.SOFT_BUTTON
         )
 
@@ -499,9 +514,13 @@ class Display:
             self.font,
             right,
             232,
-            216,
+            223,
             theme.SOFT_BUTTON
         )
+
+    # -------------------------
+    # divider
+    # -------------------------   
     def divider(self, y, color=theme.DIVIDER):
 
         self.tft.hline(
@@ -512,14 +531,8 @@ class Display:
         )
 
 
-    def section_label(self, text, x, y):
 
-        self.tft.text(
-            self.font,
-            text,
-            x,
-            y,
-            theme.SECTION_LABEL
-        )
+
+
 
 

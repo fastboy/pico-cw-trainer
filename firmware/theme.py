@@ -61,7 +61,7 @@ LETTER = st7789.GREEN
 
 INPUT = st7789.WHITE
 
-TARGET = st7789.WHITE
+TARGET = st7789.CYAN
 
 
 # -------------------------------------------------

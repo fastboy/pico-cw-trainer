@@ -164,3 +164,49 @@ battery mode:
 
 USB programming mode:
 battery power switched off
+
+
+--------------------------------
+A good 240-pixel layout is:
+
+0–38     Title + WPM
+--------------------------------
+42       SEND WORD
+62       TARGET WORD
+80       Hint line 1
+98       Hint line 2
+116      Hint line 3
+--------------------------------
+134      YOU SENT        THAT IS
+152      Sent pattern line 1
+170      Sent pattern line 2
+188      Sent pattern line 3
+--------------------------------
+204      RESULT          CORRECT
+--------------------------------
+216      BACK      NEXT      SHOW
+
+later fixed to
+
+Title + WPM
+----------------
+SEND ...
+target + optional hint
+----------------
+YOU SENT        result
+decoded text
+Morse pattern
+----------------
+BACK   NEXT   HINT
+
+for single character
+Title + WPM
+-------------------------------- y=38
+SEND   A
+optional hint: .-
+-------------------------------- y=132
+YOU SENT                 CORRECT
+decoded character
+sent Morse pattern
+-------------------------------- y=220
+BACK        NEXT          HINT

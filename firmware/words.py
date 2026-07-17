@@ -4,6 +4,7 @@ from morse import MORSE
 
 import config
 import random
+import theme
 import st7789
 
 
@@ -189,7 +190,7 @@ WORDS = (
 )
 
 
-class RandomWords(Screen):
+class Words(Screen):
 
     def __init__(
         self,
@@ -475,7 +476,7 @@ class RandomWords(Screen):
             self.result_text = "CORRECT"
 
             self.result_color = (
-                st7789.GREEN
+                theme.SUCCESS
             )
 
             print(
@@ -513,7 +514,7 @@ class RandomWords(Screen):
             self.result_text = "INCORRECT"
 
             self.result_color = (
-                st7789.RED
+                theme.ERROR
             )
 
             # Reveal the expected Morse after
@@ -627,41 +628,52 @@ class RandomWords(Screen):
 
     def draw_target_area(self):
 
+        # Clear everything between the
+        # top and middle dividers.
         self.display.tft.fill_rect(
+            0,
+            39,
+            self.display.WIDTH,
+            93,
+            theme.BACKGROUND
+        )
+
+        # Section heading
+        self.display.tft.text(
+            self.display.font,
+            "SEND WORD",
             10,
-            64,
-            300,
-            40,
-            st7789.BLACK
+            42,
+            theme.LABEL
         )
 
         # Word to send
         self.display.tft.text(
             self.display.font,
             self.target_word,
-            24,
-            68,
-            st7789.GREEN
+            10,
+            60,
+            theme.TARGET
         )
 
-
+        # Optional Morse hint
         if self.hint_visible:
 
             lines = self.split_patterns(
                 self.target_patterns(),
-                13
+                18
             )
 
-            y = 68
+            y = 78
 
-            for line in lines[:2]:
+            for line in lines[:3]:
 
                 self.display.tft.text(
                     self.display.font,
                     line,
-                    105,
+                    10,
                     y,
-                    st7789.CYAN
+                    theme.HINT
                 )
 
                 y += 18
@@ -683,46 +695,82 @@ class RandomWords(Screen):
                 self.decoder.buffer
             )
 
-        self.draw_pattern_lines(
+        self.draw_sent_content(
             patterns
         )
 
 
     # -------------------------
-    # Draw pattern lines
+    # Draw decoded text and Morse
     # -------------------------
 
-    def draw_pattern_lines(
+    def draw_sent_content(
         self,
         patterns
     ):
 
+        # Clear everything below the
+        # YOU SENT heading and above
+        # the bottom divider.
         self.display.tft.fill_rect(
-            10,
-            138,
-            300,
-            28,
-            st7789.BLACK
+            0,
+            153,
+            self.display.WIDTH,
+            67,
+            theme.BACKGROUND
         )
 
-        lines = self.split_patterns(
+        # -------------------------
+        # Decoded text
+        # -------------------------
+        #
+        # Up to 18 characters per line.
+        # Two lines are available.
+        # -------------------------
+
+        text_lines = [
+            self.sent_word[:18],
+            self.sent_word[18:36]
+        ]
+
+        y = 154
+
+        for line in text_lines:
+
+            if line:
+
+                self.display.tft.text(
+                    self.display.font,
+                    line,
+                    10,
+                    y,
+                    theme.INPUT
+                )
+
+            y += 18
+
+        # -------------------------
+        # Morse patterns
+        # -------------------------
+
+        pattern_lines = self.split_patterns(
             patterns,
             18
         )
 
-        y = 138
+        y = 188
 
-        for line in lines[:2]:
+        for line in pattern_lines[:2]:
 
             self.display.tft.text(
                 self.display.font,
                 line,
                 10,
                 y,
-                st7789.WHITE
+                theme.PATTERN
             )
 
-            y += 16
+            y += 17
 
 
     # -------------------------
@@ -731,26 +779,7 @@ class RandomWords(Screen):
 
     def draw_sent(self):
 
-        self.display.tft.fill_rect(
-            10,
-            122,
-            300,
-            44,
-            st7789.BLACK
-        )
-
-        if self.sent_word:
-
-            self.display.tft.text(
-                self.display.font,
-                self.sent_word,
-                170,
-                122,
-                st7789.WHITE
-            )
-
-
-        self.draw_pattern_lines(
+        self.draw_sent_content(
             self.sent_patterns
         )
 
@@ -762,11 +791,11 @@ class RandomWords(Screen):
     def draw_result(self):
 
         self.display.tft.fill_rect(
-            125,
-            168,
-            185,
-            25,
-            st7789.BLACK
+            165,
+            135,
+            145,
+            18,
+            theme.BACKGROUND
         )
 
         if self.result_text:
@@ -774,8 +803,8 @@ class RandomWords(Screen):
             self.display.tft.text(
                 self.display.font,
                 self.result_text,
-                125,
-                168,
+                165,
+                136,
                 self.result_color
             )
 
@@ -792,8 +821,7 @@ class RandomWords(Screen):
 
         else:
 
-            right_label = " SHOW"
-
+            right_label = " HINT"
 
         self.display.show_softkeys(
             "BACK",
@@ -816,58 +844,35 @@ class RandomWords(Screen):
             config.WPM
         )
 
+        # Target and optional hint
+        self.draw_target_area()
 
-        # -------------------------
-        # Headings
-        # -------------------------
-
-        self.display.tft.text(
-            self.display.font,
-            "SEND WORD",
-            10,
-            42,
-            st7789.YELLOW
-        )
-
-        self.display.tft.text(
-            self.display.font,
-            "PATTERN",
-            190,
-            42,
-            st7789.YELLOW
-        )
-
-
+        # User input heading
         self.display.tft.text(
             self.display.font,
             "YOU SENT",
             10,
-            105,
-            st7789.YELLOW
+            136,
+            theme.LABEL
         )
 
-        self.display.tft.text(
-            self.display.font,
-            "THAT IS",
-            170,
-            105,
-            st7789.YELLOW
-        )
-
-
-        self.display.tft.text(
-            self.display.font,
-            "RESULT",
-            10,
-            168,
-            st7789.YELLOW
-        )
-
-
-        self.draw_target_area()
-
+        # Dynamic content
         self.draw_sent()
 
         self.draw_result()
 
         self.draw_softkeys()
+
+        # Draw dividers last so the clearing
+        # rectangles cannot erase them.
+        self.display.divider(
+            38
+        )
+
+        self.display.divider(
+            132
+        )
+
+        self.display.divider(
+            220
+        )

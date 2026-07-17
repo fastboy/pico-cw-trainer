@@ -22,7 +22,7 @@ class Learn(Screen):
 
             "Single Character",
             "Character Groups",
-            "Random Words",
+            "Words",
             "Callsigns",
             "Prosigns",
 
@@ -200,12 +200,12 @@ class Learn(Screen):
 
         elif selected == "Character Groups":
 
-            return "random_group"
+            return "character_groups"
 
 
-        elif selected == "Random Words":
+        elif selected == "Words":
 
-            return "random_words"
+            return "words"
 
 
         elif selected == "Callsigns":

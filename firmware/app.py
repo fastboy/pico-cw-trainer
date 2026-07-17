@@ -5,8 +5,8 @@ import config
 from learn import Learn
 from practice import Practice
 from single_character import SingleCharacter
-from random_group import RandomGroup
-from random_words import RandomWords
+from character_groups import CharacterGroups
+from words import Words
 
 from display import Display
 from input import Input
@@ -97,11 +97,11 @@ class App:
             self.display,
             self.keyer
         )
-        self.random_group = RandomGroup(
+        self.character_groups = CharacterGroups(
             self.display,
             self.keyer
         )
-        self.random_words = RandomWords(
+        self.words = Words(
             self.display,
             self.keyer
         )
@@ -118,8 +118,8 @@ class App:
         
         self.learn.parent = self.menu
         self.single_character.parent = self.learn
-        self.random_group.parent = self.learn
-        self.random_words.parent = self.learn
+        self.character_groups.parent = self.learn
+        self.words.parent = self.learn
         
 
 
@@ -146,8 +146,8 @@ class App:
             "practice": self.practice,
             "learn": self.learn,
             "single_character": self.single_character,
-            "random_group": self.random_group,
-            "random_words": self.random_words,
+            "character_groups": self.character_groups,
+            "words": self.words,
         }
 
 
