@@ -177,7 +177,7 @@ class Learn(Screen):
 
         selected = self.items[self.index]
 
-        print("Learan:", selected)
+        print("Learn:", selected)
 
         # -------------------------
         # Return to main menu
@@ -210,7 +210,7 @@ class Learn(Screen):
 
         elif selected == "Callsigns":
 
-            print("Callsigns coming soon")
+            return "callsigns"
 
 
         elif selected == "Prosigns":
