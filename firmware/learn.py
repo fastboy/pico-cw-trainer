@@ -26,6 +26,8 @@ class Learn(Screen):
             "Callsigns",
             "Prosigns",
 
+
+            "Abbreviations",
             "Q-Codes",
             "Mixed Text",
             "Game",
@@ -215,12 +217,16 @@ class Learn(Screen):
 
         elif selected == "Prosigns":
 
-            print("Prosigns coming soon")
+            return "prosigns"
+        
+        elif selected == "Abbreviations":
+
+            return "abbreviations"
 
 
         elif selected == "Q-Codes":
 
-            print("Q-Codes coming soon")
+            return "q_codes"
 
 
         elif selected == "Mixed Text":

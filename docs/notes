@@ -210,3 +210,32 @@ decoded character
 sent Morse pattern
 -------------------------------- y=220
 BACK        NEXT          HINT
+
+
+---------------------------------
+adding new app includes new .py file and screen creator, hierarchy ,screen registry and menu item
+below is example of adding app Prosigns with filename - prosigns.py
+in app.py add following:
+screen creation should be: 
+
+from prosigns import Prosigns
+self.prosigns = Prosigns(
+    self.display,
+    self.keyer
+)
+
+Registry:
+
+"prosigns": self.prosigns,
+
+Hierarchy:
+
+self.prosigns.parent = self.learn
+
+And in learn.py:
+
+elif selected == "Prosigns":
+
+    return "prosigns"
+
+    

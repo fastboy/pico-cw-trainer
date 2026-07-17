@@ -7,6 +7,11 @@ from practice import Practice
 from single_character import SingleCharacter
 from character_groups import CharacterGroups
 from words import Words
+from callsigns import Callsigns
+from prosigns import Prosigns
+from abbreviations import Abbreviations
+from help_screen import HelpScreen
+from q_codes import QCodes
 
 from display import Display
 from input import Input
@@ -97,13 +102,87 @@ class App:
             self.display,
             self.keyer
         )
+        
         self.character_groups = CharacterGroups(
             self.display,
             self.keyer
         )
+        
         self.words = Words(
             self.display,
             self.keyer
+        )
+        
+        self.callsigns = Callsigns(
+            self.display,
+            self.keyer
+        )
+        
+        self.prosigns = Prosigns(
+            self.display,
+            self.keyer
+        )
+        
+        self.prosigns_help = HelpScreen(
+            self.display,
+            "PROSIGNS",
+            (
+                "PROSIGNS ARE",
+                "PROCEDURAL SIGNALS",
+                "USED IN CW.",
+                "",
+                "THE LETTERS ARE",
+                "SENT TOGETHER AS",
+                "ONE CONTINUOUS",
+                "MORSE CHARACTER.",
+                "",
+                "AR = END MESSAGE",
+                "BT = BREAK"
+            )
+        )
+        
+        self.abbreviations = Abbreviations(
+            self.display,
+            self.keyer
+        )
+        
+        self.abbreviations_help = HelpScreen(
+            self.display,
+            "ABBREVIATIONS",
+            (
+                "CW ABBREVIATIONS",
+                "SHORTEN COMMON WORDS",
+                "TO MAKE CONTACTS",
+                "FASTER.",
+                "",
+                "PLEASE = PSE",
+                "THANKS = TNX",
+                "YOUR = UR",
+                "",
+                "SEND EACH LETTER",
+                "SEPARATELY."
+            )
+        )
+        
+        self.q_codes = QCodes(
+            self.display,
+            self.keyer
+        )
+        
+        self.q_codes_help = HelpScreen(
+            self.display,
+            "Q-CODES",
+            (
+                "Q-codes are short",
+                "three-letter signals.",
+                "",
+                "QTH = LOCATION",
+                "QRM = INTERFERENCE",
+                "QRS = SEND SLOWER",
+                "QRZ = WHO CALLS?",
+                "",
+                "Send letters separately."
+            )
         )
 
         # -------------------------
@@ -113,13 +192,18 @@ class App:
         self.settings.parent = self.menu
         self.speed.parent = self.settings
         self.tone.parent = self.settings
-
         self.practice.parent = self.menu
-        
         self.learn.parent = self.menu
         self.single_character.parent = self.learn
         self.character_groups.parent = self.learn
         self.words.parent = self.learn
+        self.callsigns.parent = self.learn
+        self.prosigns.parent = self.learn
+        self.prosigns_help.parent = self.prosigns
+        self.abbreviations.parent = self.learn
+        self.abbreviations_help.parent = self.abbreviations
+        self.q_codes.parent = self.learn
+        self.q_codes_help.parent = self.q_codes
         
 
 
@@ -148,6 +232,13 @@ class App:
             "single_character": self.single_character,
             "character_groups": self.character_groups,
             "words": self.words,
+            "callsigns": self.callsigns,
+            "prosigns": self.prosigns,
+            "prosigns_help": self.prosigns_help,
+            "abbreviations": self.abbreviations,
+            "abbreviations_help": self.abbreviations_help,
+            "q_codes": self.q_codes,
+            "q_codes_help": self.q_codes_help,
         }
 
 
@@ -283,6 +374,7 @@ class App:
                 self.change_screen(
                     result
                 )
+
 
 
 

@@ -484,8 +484,88 @@ class Display:
         right
     ):
 
-        # Clear only the area below
-        # the bottom divider.
+        # Accept both formats:
+        #
+        # Old:
+        #     "BACK"
+        #
+        # New:
+        #     ("HELP", "HINT")
+        #
+        # Tuple order:
+        #     (hold_label, press_label)
+
+        def split_labels(value):
+
+            if isinstance(value, tuple):
+
+                return value
+
+            return "", value
+
+
+        def draw_centered(
+            text,
+            centre,
+            y,
+            color
+        ):
+
+            if not text:
+
+                return
+
+            text_width = (
+                len(text) * 16
+            )
+
+            x = centre - (
+                text_width // 2
+            )
+
+            self.tft.text(
+                self.font,
+                text,
+                x,
+                y,
+                color
+            )
+
+
+        left_top, left_bottom = (
+            split_labels(left)
+        )
+
+        center_top, center_bottom = (
+            split_labels(center)
+        )
+
+        right_top, right_bottom = (
+            split_labels(right)
+        )
+
+
+        top_labels = (
+            left_top,
+            center_top,
+            right_top
+        )
+
+        bottom_labels = (
+            left_bottom,
+            center_bottom,
+            right_bottom
+        )
+
+
+        button_centres = (
+            40,
+            160,
+            280
+        )
+
+
+        # Clear the normal soft-key row.
         self.tft.fill_rect(
             0,
             221,
@@ -494,29 +574,60 @@ class Display:
             theme.BACKGROUND
         )
 
-        self.tft.text(
-            self.font,
-            left,
-            8,
-            223,
-            theme.SOFT_BUTTON
+
+        # Clear any previous hold labels.
+        previous_top_labels = getattr(
+            self,
+            "_softkey_top_labels",
+            ("", "", "")
         )
 
-        self.tft.text(
-            self.font,
-            center,
-            120,
-            223,
-            theme.SOFT_BUTTON
+
+        for index in range(3):
+
+            if (
+                previous_top_labels[index]
+                or top_labels[index]
+            ):
+
+                centre = (
+                    button_centres[index]
+                )
+
+                self.tft.fill_rect(
+                    centre - 40,
+                    204,
+                    80,
+                    16,
+                    theme.BACKGROUND
+                )
+
+
+        self._softkey_top_labels = (
+            top_labels
         )
 
-        self.tft.text(
-            self.font,
-            right,
-            232,
-            223,
-            theme.SOFT_BUTTON
-        )
+
+        # Draw hold labels above divider.
+        for index in range(3):
+
+            draw_centered(
+                top_labels[index],
+                button_centres[index],
+                204,
+                theme.SOFT_BUTTON
+            )
+
+
+        # Draw press labels below divider.
+        for index in range(3):
+
+            draw_centered(
+                bottom_labels[index],
+                button_centres[index],
+                223,
+                theme.SOFT_BUTTON
+            )
 
     # -------------------------
     # divider
@@ -529,6 +640,7 @@ class Display:
             self.WIDTH,
             color
         )
+
 
 
 
